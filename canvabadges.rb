@@ -26,13 +26,18 @@ class Canvabadges < Sinatra::Base
   # enable sessions so we can remember the launch info between http requests, as
   # the user takes the assessment
   enable :sessions
+  enable :logging, :dump_errors, :raise_errors, :show_exceptions
+  FileUtils.mkdir_p 'log' unless File.exists?('log')
+  log = File.new("log/sinatra.log", "a")
+  #$stdout.reopen(log)
+  $stderr.reopen(log)
+
   raise "session key required" if ENV['RACK_ENV'] == 'production' && !ENV['SESSION_KEY']
   set :session_secret, ENV['SESSION_KEY'] || "local_secret"
 
   env = ENV['RACK_ENV'] || settings.environment
   DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
   DataMapper.auto_upgrade!
-  
   configure :production do
     require 'rack-ssl-enforcer'
     use Rack::SslEnforcer
