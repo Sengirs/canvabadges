@@ -29,12 +29,19 @@ class Canvabadges < Sinatra::Base
   enable :logging, :dump_errors, :raise_errors, :show_exceptions
   FileUtils.mkdir_p 'log' unless File.exists?('log')
   log = File.new("log/sinatra.log", "a")
-  #$stdout.reopen(log)
   $stderr.reopen(log)
 
-  raise "session key required" if ENV['RACK_ENV'] == 'production' && !ENV['SESSION_KEY']
-  set :session_secret, ENV['SESSION_KEY'] || "local_secret"
+  config = YAML.load( File.open(Dir.pwd + "/configuration.yml") )
+  puts config
+  if ENV["RACK_ENV"] == 'production'
+    config.each do |key, value|
+      ENV[key] = value
+    end
+    raise "Please change configuration.yml" if ENV['SESSION_KEY'] == "long string" 
+    raise "session key required" unless ENV["SESSION_KEY"] 
+  end
 
+  set :session_secret, ENV['SESSION_KEY'] || "local_secret"
   env = ENV['RACK_ENV'] || settings.environment
   DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
   DataMapper.auto_upgrade!
