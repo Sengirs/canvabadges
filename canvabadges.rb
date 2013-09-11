@@ -31,9 +31,8 @@ class Canvabadges < Sinatra::Base
   log = File.new("log/sinatra.log", "a")
   $stderr.reopen(log)
 
-  config = YAML.load( File.open(Dir.pwd + "/configuration.yml") )
-  puts config
   if ENV["RACK_ENV"] == 'production'
+    config = YAML.load( File.open(Dir.pwd + "/configuration.yml") )
     config.each do |key, value|
       ENV[key] = value
     end
