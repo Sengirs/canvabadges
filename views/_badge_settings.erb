@@ -121,11 +121,13 @@
         <% settings = (org && org.settings) || BadgeHelper.issuer %>
         <p class="verification">
           <img src='<%= settings['image'] %>'/>
-          This badge is issued by 
+          Ce badge a été émis par 
           <a href="<%= settings['url'] %>">
           <%= settings['name'] %></a>.
-          It is hosted at 
+<% if false %>
+          Il est hébergé par le site 
           <%= (org && org.host) || request.host %>.
+<% end %>
           If this association
           is incorrect, please <a href="<%= BadgeHelper.issuer['owner_url'] %>">contact the
           administrator of this site</a>.

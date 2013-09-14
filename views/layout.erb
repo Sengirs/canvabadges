@@ -119,6 +119,7 @@
           <div id="contents">
 <%= yield %>
           </div>
+<% if false %>
           <footer class="footer">
             <% issuer = BadgeHelper.issuer %>
             powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
@@ -127,6 +128,7 @@
               | <a href="/stats">Stats</a>
             <% end %>
           </footer>
+<% end %>
         </div>
         <script src="/jquery.min.js"></script>
         <script src="https://beta.openbadges.org/issuer.js"></script>
