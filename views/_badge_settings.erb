@@ -1,11 +1,14 @@
-<% settings = (@badge_config && @badge_config.settings) || {}
+<% settings = @badge_placement_config.merged_settings || {}
    ref_code = settings['reference_code']
    advanced = ref_code || settings['modules'] || settings['manual_approval']
-   disabled = @badge_config && @badge_config.root_id 
+   disabled = false
 %>
-  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_config_id %>">
+<% if !@badge_placement_config.configured? %>
+  <h3>This badge won't be available to students until it is saved.</h3>
+<% end %>
+  <form class='well form-horizontal' style="margin-top: 15px;" method="post" action="/badges/settings/<%= @badge_placement_config_id %>">
     <h2>Badge Settings</h2>
-    <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px;' class='thumbnail'/>
+    <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px; width: 90px; height: 90px;' class='thumbnail'/>
     <fieldset>
       <div class="control-group">
         <label class="control-label" for="badge_name">Badge name: </label>
@@ -17,7 +20,8 @@
         <label class="control-label" for="badge_url">Badge icon: </label>
         <div class="controls">
           <input type="text" <%= "disabled='true'" if disabled %> class="span2" placeholder="https://" id="badge_url" name="badge_url" value="<%= CGI.escapeHTML(settings['badge_url'] || "") %>"/>
-          must be 72x72 pixels
+          should be 90x90 pixels<br/>
+          <a href="https://www.openbadges.me/designer.html?origin=<%= CGI.escape("#{BadgeHelper.protocol}://#{request.host_with_port}") %>&email=support@instructure.com" data-fancybox-type="iframe" id="badge_designer">use the badge designer</a>
         </div>
       </div>
       <div class="control-group">
@@ -117,7 +121,7 @@
         </div>
       </div>
       <div class="control-group verification">
-        <% org = @badge_config.organization %>
+        <% org = @badge_placement_config.organization %>
         <% settings = (org && org.settings) || BadgeHelper.issuer %>
         <p class="verification">
           <img src='<%= settings['image'] %>'/>
@@ -137,7 +141,7 @@
         <div class="controls">
           <div class="input-append">
             <label>
-              <input id="public" type="checkbox" <%= 'checked' if @badge_config.public %> name="public" value="1"/>
+              <input id="public" type="checkbox" <%= 'checked' if @badge_placement_config.badge_config.public %> name="public" value="1"/>
               List this badge in the organization's public badge directory
             </label>
           </div>
@@ -145,6 +149,7 @@
       </div>
       <div class="form-actions" style="border: 0; background: transparent;">
         <button type="submit" class='btn btn-primary'>Save Badge Settings</button>
+        <button type="button" class='btn' id="disable_badge" rel="/badges/disable/<%= @badge_placement_config.id %>">Disable This Badge Location</button>
       </div>
     </fieldset>
   </form> 
