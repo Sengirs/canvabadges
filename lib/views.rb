@@ -160,8 +160,7 @@ module Sinatra
           return "<h3>Error retrieving badge status</h3>"
         end
       end
-    end
-    
+    end    
     
     module Helpers
       def org_check
