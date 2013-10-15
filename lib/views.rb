@@ -76,39 +76,72 @@ module Sinatra
         erb :user_badges
       end
       
+      app.get "/badges/course/:course_id" do  
+        get_org
+        permission_check(params['course_id'], 'view')
+        @badges = Badge.all(:state => 'awarded', :user_id => session['user_id'], :course_id => params['course_id'], :domain_id => session['domain_id'])
+        @user = UserConfig.first(:user_id => session['user_id'], :domain_id => session['domain_id'])
+        halt 400, error("No user information found") unless @user
+        @badge_placements = BadgePlacementConfig.all(:course_id => params['course_id'], :domain_id => session['domain_id'], :order => :id.desc).select(&:configured?).uniq{|p| p.badge_config_id }
+        @other_badge_placements = BadgeConfigOwner.all(:user_config_id => @user.id, BadgeConfigOwner.badge_placement_config.course_id.not => params['course_id']).map(&:badge_placement_config).select(&:configured?)
+        erb :course_badges
+      end
+      
+      app.get "/badges/add_to_course/:badge_placement_id/:course_id" do
+        load_badge_config(params['badge_placement_id'], 'edit')
+        permission_check(params['course_id'], 'edit')
+        if @badge_placement_config.course_id == params['course_id']
+          @bp = @badge_placement_config
+        else
+          id = "#{params['course_id']}-#{session['domain_id']}"
+          @bp = BadgePlacementConfig.first_or_new(:course_id => params['course_id'], :domain_id => session['domain_id'], :placement_id => id)
+          @bp.badge_config_id = @badge_placement_config.badge_config_id
+          @bp.external_config_id = @badge_placement_config.external_config_id
+          @bp.organization_id = @badge_placement_config.organization_id
+          @bp.load_from_old_config(@user_config, @badge_placement_config)
+          @bp.settings['award_only'] = true
+          @bp.save
+        end
+        redirect to("/badges/check/#{@bp.id}/#{session['user_id']}")
+      end
+      
       # the magic page, APIs it up to make sure the user has done what they need to,
       # shows the results and lets them add the badge if they're done
-      app.get "/badges/check/:badge_config_id/:user_id" do
-        load_badge_config(params['badge_config_id'], 'view')
+      app.get "/badges/check/:badge_placement_config_id/:user_id" do
+        load_badge_config(params['badge_placement_config_id'], 'view')
         
         if @user_config && session["permission_for_#{@course_id}"] == 'edit'
-          @badge_config.teacher_user_config_id = @user_config.id
-          @badge_config.save
+          @badge_placement_config.teacher_user_config_id = @user_config.id
+          @badge_placement_config.save
         end
-        if @badge_config && @badge_config.pending?
-          @badge_config.load_from_old_config(@user_config)
+        if @badge_placement_config && @badge_placement_config.pending?
+          @badge_placement_config.load_from_old_config(@user_config)
         end
         
-        if @badge_config && @badge_config.configured?
+        if @badge_placement_config && @badge_placement_config.configured?
           @student = {}
           erb :badge_check
         else
           if session["permission_for_#{@course_id}"] == 'edit'
-            erb :manage_badge
+            if @badge_placement_config.award_only?
+              erb :badge_check
+            else
+              erb :manage_badge
+            end
           else
             return message("Your teacher hasn't set up this badge yet")
           end
         end
       end
 
-      app.get "/badges/status/:badge_config_id/:user_id" do
-        load_badge_config(params['badge_config_id'], 'view')
-        if @badge_config && @badge_config.configured?
+      app.get "/badges/status/:badge_placement_config_id/:user_id" do
+        load_badge_config(params['badge_placement_config_id'], 'view')
+        if @badge_placement_config && @badge_placement_config.configured?
           if @badge && !@badge.needing_evaluation?
             @student = {}
           else
             begin
-              args = @user_config.check_badge_status(@badge_config, params, session['name'], session['email'])
+              args = @user_config.check_badge_status(@badge_placement_config, params, session['name'], session['email'])
             rescue => e
               return "<h3>#{e.message}</h3>"
             end
@@ -121,12 +154,13 @@ module Sinatra
           else
             return "<h3>You are not a student in this course, so you can't earn this badge</h3>"
           end
+        elsif @badge_placement_config && @badge_placement_config.award_only?
+          return ""
         else
           return "<h3>Error retrieving badge status</h3>"
         end
       end
-    end
-    
+    end    
     
     module Helpers
       def org_check
@@ -136,7 +170,7 @@ module Sinatra
       
       def edit_course_html
         raise "no user" unless @user_config
-        raise "missing value" unless @domain_id && @badge_config_id && @course_id && @badge_config
+        raise "missing value" unless @domain_id && @badge_placement_config_id && @course_id && @badge_placement_config_id
         @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
         erb :_badge_settings
       end
