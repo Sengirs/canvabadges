@@ -1,0 +1,5 @@
+#!/bin/sh
+export RACK_ENV=production
+export DATABASE_URL="postgres://canvas:CA23Nv5!@localhost/badge_production"
+export SESSION_KEY="8db31cdd587f1159dcd043a73fb2d2ad01287ce50be2eeaac5a3a7663b1be8cd01f607ab518e200d"
+exec "/usr/local/rvm/rubies/ruby-1.9.3-p448/bin/irb"

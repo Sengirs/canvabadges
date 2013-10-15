@@ -1,3 +1,5 @@
 *.sqlite3
 .bundle
 configuration.yml
+/tmp
+/log

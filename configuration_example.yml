@@ -1,2 +1,0 @@
-DATABASE_URL: "production.sqlite"
-SESSION_KEY: "long string"
