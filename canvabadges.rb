@@ -24,8 +24,6 @@ class Canvabadges < Sinatra::Base
   register Sinatra::Views
 
   use Rack::Iframe
-  
-  use Rack::Iframe
 
   # sinatra wants to set x-frame-options by default, disable it
   disable :protection
