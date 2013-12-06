@@ -44,19 +44,22 @@ module Sinatra
             bc.organization_id = tool_config.organization_id if !bc.id
             bc.organization_id ||= @org.id
             bc.settings ||= {}
-            bc.settings['course_url'] ||= "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
+            bc.settings['course_url'] = "#{BadgeHelper.protocol}://" + host + "/courses/" + params['custom_canvas_course_id']
             bc.settings['prior_resource_link_id'] = params['custom_prior_resource_link_id'] if params['custom_prior_resource_link_id']
-            bc.settings['pending'] = !bc.id
+            bc.settings['pending'] = true if !bc.id
 
-            if params['badge_reuse_code']
-              specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
-              if specified_badge_config && bc.organization_id == specified_badge_config.organization_id && bc.badge_config != specified_badge_config && !bc.configured?
-                bc.set_badge_config(specified_badge_config)
-              end
-            else
-              old_style_badge_config = BadgeConfig.first(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
-              if old_style_badge_config
-                bc.set_badge_config(old_style_badge_config)
+            unless bc.settings['badge_config_already_checked']
+              bc.settings['badge_config_already_checked'] = true
+              if params['badge_reuse_code']
+                specified_badge_config = BadgeConfig.first(:reuse_code => params['badge_reuse_code'])
+                if specified_badge_config && bc.badge_config != specified_badge_config && !bc.configured?
+                  bc.set_badge_config(specified_badge_config)
+                end
+              else
+                old_style_badge_config = BadgeConfig.first(:placement_id => params['resource_link_id'], :domain_id => domain.id, :course_id => params['custom_canvas_course_id'])
+                if old_style_badge_config
+                  bc.set_badge_config(old_style_badge_config)
+                end
               end
             end
             if !bc.badge_config
@@ -142,10 +145,17 @@ module Sinatra
           user_config.save
           params_stash = session['params_stash']
           launch_badge_placement_config_id = session['launch_badge_placement_config_id']
+          launch_course_id = session["launch_course_id"]
+          permission = session["permission_for_#{launch_course_id}"]
+          name = session['name']
+          email = session['email']
 
           session.destroy
           session['user_id'] = user_config.user_id.to_s
           session['domain_id'] = user_config.domain_id.to_s.to_i
+          session["permission_for_#{launch_course_id}"] = permission
+          session['name'] = name
+          session['email'] = email
 
           launch_redirect(launch_badge_placement_config_id, user_config.domain_id, user_config.user_id, params_stash)
         else
