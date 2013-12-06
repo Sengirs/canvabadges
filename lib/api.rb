@@ -154,7 +154,7 @@ module Sinatra
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
             result << badge_hash(student['id'], student['name'], badge, @badge_placement_config && @badge_placement_config.nonce)
           end
-          if json.instance_variable_get('@has_more')
+          if json.more?
             next_url = "/api/v1/badges/current/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
           end
         end
@@ -166,7 +166,7 @@ module Sinatra
       def badge_hash(user_id, user_name, badge, nonce=nil)
         if badge
           abs_url = badge.badge_url || "/badges/default.png"
-          abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//)
+          abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//) || abs_url.match(/^data/)
           {
             :id => user_id,
             :name => user_name,

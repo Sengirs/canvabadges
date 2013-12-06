@@ -6,14 +6,14 @@ require 'sinatra/base'
 class Domain
   include DataMapper::Resource
   property :id, Serial
-  property :host, String
+  property :host, String, :index => true
   property :name, String
 end
 
 class Organization
   include DataMapper::Resource
   property :id, Serial
-  property :host, String
+  property :host, String, :index => true
   property :settings, Json
   
   def as_json
@@ -65,6 +65,7 @@ class ExternalConfig
 end
 
 class UserConfig
+  # NOTE: Right now the code assumes if a UserConfig exists then there is an access token attached.
   include DataMapper::Resource
   property :id, Serial
   property :user_id, String
@@ -89,7 +90,7 @@ class UserConfig
   
   def check_badge_status(badge_placement_config, params, name, email)
     scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}?include[]=total_scores", self)
-    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self) if badge_placement_config.modules_required?
+    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self, true) if badge_placement_config.modules_required?
     modules_json ||= []
     completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
     unless scores_json
@@ -146,8 +147,9 @@ class BadgeConfig
   property :settings, Json # partially deprecated
   property :root_id, Integer # deprecated
   property :reference_code, String # deprecated
-  property :reuse_code, String
+  property :reuse_code, String, :index => true
   property :public, Boolean
+  property :configured, Boolean, :index => true
   property :updated_at, DateTime
   
   before :save, :generate_nonce
@@ -205,6 +207,7 @@ class BadgeConfig
   end
 
   def generate_nonce
+    self.configured = self.configured?
     self.nonce ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
     self.reuse_code ||= Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s)
   end
@@ -220,14 +223,14 @@ class BadgeConfig
   end
   
   def configured?
-    settings && settings['badge_url']
+    !!(settings && settings['badge_url'])
   end
 end
 
 class BadgePlacementConfig
   include DataMapper::Resource
   property :id, Serial
-  property :badge_config_id, Integer
+  property :badge_config_id, Integer, :index => true
   property :course_id, String
   property :placement_id, String
   property :teacher_user_config_id, Integer
@@ -289,26 +292,29 @@ class BadgePlacementConfig
   def load_from_old_config(user_config, old_config=nil)
     self.settings ||= {}
     return nil if !self.settings['prior_resource_link_id'] || self.settings['already_loaded_from_old_config']
-    old_config = BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
+    old_config ||= BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :domain_id => self.domain_id)
+    old_config ||= BadgePlacementConfig.first(:placement_id => self.settings['prior_resource_link_id'], :badge_config_id => self.badge_config_id)
     if old_config
       # load config settings from previous badge config
+      existing_settings = self.settings
       self.settings = old_config.settings
       
       # set to pending unless
       # able to get new module ids and map them correctly for module-configured badges
       self.settings['pending'] = true if old_config.modules_required?
+      self.settings['course_url'] = existing_settings['course_url'] if existing_settings
       
       api_user = UserConfig.first(:id => self.teacher_user_config_id) || user_config
       if api_user && old_config.modules_required?
         # make an API call to get the module ids and try to map from old to new
         # map ids for module names and also credits_for values
         new_modules = []
-        modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", api_user) || []
+        modules_json = CanvasAPI.api_call("/api/v1/courses/#{self.course_id}/modules", api_user, true) || []
         all_found = true
         old_config.settings['modules'].each do |id, str, credits|
           new_module = modules_json.detect{|m| m['name'] == str}
           if new_module
-            new_modules << [new_module['id'].to_s, str, credits]
+            new_modules << [new_module['id'].to_s.to_i, str, credits]
           else
             all_found = false
           end
@@ -338,6 +344,10 @@ class BadgePlacementConfig
   
   def pending?
     settings && settings['pending']
+  end
+  
+  def needs_old_config_load?
+    settings && !settings['min_percent'] && settings['prior_resource_link_id']
   end
   
   def award_only?
@@ -401,12 +411,11 @@ class Badge
   include DataMapper::Resource
   property :id, Serial
   property :placement_id, String
-  property :course_id, String
-  property :user_id, String
-  property :domain_id, Integer
+  property :user_id, String, :index => [:user_badge, :earned_badge]
+  property :domain_id, Integer, :index => :earned_badge
   property :badge_url, Text
   property :nonce, String
-  property :badge_config_id, Integer
+  property :badge_config_id, Integer, :index => :user_badge
   property :badge_placement_config_id, Integer
   property :name, String, :length => 256
   property :user_full_name, String, :length => 256
@@ -419,7 +428,8 @@ class Badge
   property :evidence_url, String, :length => 4096
   property :manual_approval, Boolean
   property :public, Boolean
-  property :state, String
+  property :state, String, :index => [:earned_badge, :awarded_counter]
+  property :course_id, String, :index => :earned_badge
   property :global_user_id, String, :length => 256
   property :issuer_name, String
   property :issuer_image_url, String
@@ -463,10 +473,10 @@ class Badge
     self.salt ||= Time.now.to_i.to_s
     self.nonce ||= Digest::MD5.hexdigest(self.salt + rand.to_s)
     self.issued ||= DateTime.now if self.awarded?
-    if !self.recipient
-      sha = Digest::SHA256.hexdigest(self.email + self.salt)
-      self.recipient = "sha256$#{sha}"
-    end
+
+    sha = Digest::SHA256.hexdigest(self.email + self.salt)
+    self.recipient = "sha256$#{sha}"
+
     self.badge_placement_config ||= BadgePlacementConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
     self.badge_config ||= self.badge_placement_config && self.badge_placement_config.badge_config
     user_config = UserConfig.first(:user_id => self.user_id, :domain_id => self.domain_id)

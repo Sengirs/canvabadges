@@ -20,6 +20,9 @@ module Sinatra
       app.get "/stats" do
         @full_footer = true
         org_check
+        @stats_org = @org
+        @stats_org = nil if @org.default? && !params['this_org_only']
+        @stats = Stats.general(@stats_org)
         erb :stats
       end
       
@@ -52,6 +55,7 @@ module Sinatra
   
       # public page that shows requirements for badge completion
       app.get "/badges/criteria/:id/:nonce" do
+        org_check
         @badge_config = BadgeConfig.first(:id => params['id'], :nonce => params['nonce'])
         if !@badge_config
           return error("Badge not found")
@@ -61,6 +65,9 @@ module Sinatra
           @user_config = UserConfig.first(:user_id => @badge.user_id, :domain_id => @badge.domain_id)
           @user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
         end
+        if !params['user']
+          @stats = Stats.badge_earnings(@badge_config)
+        end
 
         @earned = params['user'] && @badge && @badge.awarded? && @badge.config_nonce == params['nonce']
         erb :badge_completion
@@ -68,6 +75,7 @@ module Sinatra
       
       # show all public badges for the specified user
       app.get "/badges/all/:domain_id/:user_id" do
+        org_check
         @for_current_user = session['user_id'] == params['user_id'] && session['domain_id'] == params['domain_id']
         @badges = Badge.all(:user_id => params['user_id'], :domain_id => params['domain_id'], :state => 'awarded')
         @badges = @badges.select{|b| b.public } unless @for_current_user
@@ -88,6 +96,7 @@ module Sinatra
       end
       
       app.get "/badges/add_to_course/:badge_placement_id/:course_id" do
+        org_check
         load_badge_config(params['badge_placement_id'], 'edit')
         permission_check(params['course_id'], 'edit')
         if @badge_placement_config.course_id == params['course_id']
@@ -108,13 +117,14 @@ module Sinatra
       # the magic page, APIs it up to make sure the user has done what they need to,
       # shows the results and lets them add the badge if they're done
       app.get "/badges/check/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
         
         if @user_config && session["permission_for_#{@course_id}"] == 'edit'
           @badge_placement_config.teacher_user_config_id = @user_config.id
           @badge_placement_config.save
         end
-        if @badge_placement_config && @badge_placement_config.pending?
+        if @badge_placement_config && (@badge_placement_config.pending? || @badge_placement_config.needs_old_config_load?)
           @badge_placement_config.load_from_old_config(@user_config)
         end
         
@@ -134,7 +144,15 @@ module Sinatra
         end
       end
 
+      app.get "/badges/modules/:badge_placement_config_id/:user_id" do
+        org_check
+        load_badge_config(params['badge_placement_config_id'], 'edit')
+        @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config, true)
+        erb :_badge_modules, :layout => false
+      end
+      
       app.get "/badges/status/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
         if @badge_placement_config && @badge_placement_config.configured?
           if @badge && !@badge.needing_evaluation?
@@ -143,6 +161,8 @@ module Sinatra
             begin
               args = @user_config.check_badge_status(@badge_placement_config, params, session['name'], session['email'])
             rescue => e
+              puts e.message
+              puts e.backtrace
               return "<h3>#{e.message}</h3>"
             end
             @student = args[:student]
@@ -171,7 +191,6 @@ module Sinatra
       def edit_course_html
         raise "no user" unless @user_config
         raise "missing value" unless @domain_id && @badge_placement_config_id && @course_id && @badge_placement_config_id
-        @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config)
         erb :_badge_settings
       end
       
