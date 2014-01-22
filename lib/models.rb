@@ -124,7 +124,7 @@ class UserConfig
   
   def check_badge_status(badge_placement_config, params, name, email)
     scores_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}?include[]=total_scores", self)
-    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules", self, true) if badge_placement_config.modules_required?
+    modules_json = CanvasAPI.api_call("/api/v1/courses/#{badge_placement_config.course_id}/modules?student_id=#{self.user_id}", self, true) if badge_placement_config.modules_required?
     modules_json ||= []
     completed_module_ids = modules_json.select{|m| m['completed_at'] }.map{|m| m['id'] }.compact
     unless scores_json
