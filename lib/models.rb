@@ -10,6 +10,40 @@ class Domain
   property :name, String
 end
 
+class OrgStats
+  include DataMapper::Resource
+  property :id, Serial
+  property :organization_id, String
+  property :data, Json
+  property :updated_at, DateTime
+  
+  def self.check(org)
+    stats = OrgStats.first_or_new(:organization_id => org && org.id)
+    if !stats.updated_at || stats.updated_at < (DateTime.now - 1.0)
+      res = {}
+      if org
+        res['issuers'] = ExternalConfig.all(:organization_id => org.id).count
+        res['badge_configs'] = BadgeConfig.all(:configured => true, :organization_id => org.id).count
+        res['badge_placement_configs'] = BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => org.id).count
+        res['badges'] = Badge.all(:state => 'awarded', Badge.badge_config.organization_id => org.id).count
+        res['domains'] = Domain.count
+        res['organizations'] = Organization.count
+      else
+        res['issuers'] = ExternalConfig.count
+        res['badge_configs'] = BadgeConfig.all(:configured => true).count
+        res['badge_placement_configs'] = BadgePlacementConfig.count
+        res['badges'] = Badge.all(:state => 'awarded').count
+        res['domains'] = Domain.count
+        res['organizations'] = Organization.count
+      end
+      stats.data = res
+      stats.updated_at = DateTime.now
+      stats.save
+    end
+    stats.data
+  end
+end
+
 class Organization
   include DataMapper::Resource
   property :id, Serial
@@ -149,6 +183,7 @@ class BadgeConfig
   property :reference_code, String # deprecated
   property :reuse_code, String, :index => true
   property :public, Boolean
+  property :uncool, Boolean
   property :configured, Boolean, :index => true
   property :updated_at, DateTime
   
@@ -237,17 +272,19 @@ class BadgePlacementConfig
   property :author_user_config_id, Integer
   property :nonce, String # deprecated
   property :external_config_id, Integer # deprecated
-  property :organization_id, Integer # deprecated
+  property :organization_id, Integer
   property :domain_id, Integer
   property :settings, Json # partially deprecated
   property :root_id, Integer # deprecated
   property :reference_code, String # deprecated
-  property :public, Boolean
+  property :public, Boolean #deprecated
+  property :public_course, Boolean, :index => true
   property :updated_at, DateTime
   
   belongs_to :badge_config
   belongs_to :external_config
   belongs_to :organization
+  belongs_to :domain
   
   def merged_settings
     settings = (self.badge_config && self.badge_config.settings) || {}
@@ -286,6 +323,20 @@ class BadgePlacementConfig
       # get the paginated list of students
       # for each student, check if they already have a badge awarded
       # if not, check on award status
+    end
+  end
+  
+  def check_for_public_state
+    return false unless self.domain
+    host = "https://" + self.domain.host
+    api = Canvas::API.new(:host => host, :token => "")
+    begin
+      json = api.get("/api/v1/courses/#{self.course_id}")
+      self.public_course = !!(json && json['id'].to_s == self.course_id)
+    rescue Canvas::ApiError => e
+      self.public_course = false
+    rescue Timeout::Error => e
+      false
     end
   end
   

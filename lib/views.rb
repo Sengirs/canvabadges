@@ -8,6 +8,9 @@ module Sinatra
       app.get "/" do
         @full_footer = true
         org_check
+        @public_badge_placements = BadgePlacementConfig.all(:organization_id => @org.id, BadgePlacementConfig.badge_config.uncool => nil, BadgePlacementConfig.badge_config.public => true, :public_course => true, :order => :id.desc, :limit => 25)
+        @public_badge_placements = @public_badge_placements.uniq{|p| [p.course_id, p.badge_config_id] }
+        
         erb (@org.settings['template'] || :index).to_sym
       end
       
@@ -63,7 +66,8 @@ module Sinatra
         @badge = Badge.first(:nonce => params['user'])
         if @badge
           @user_config = UserConfig.first(:user_id => @badge.user_id, :domain_id => @badge.domain_id)
-          @user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
+          # TODO: Canvas needs a reliable way to get global user ids
+          #@user_config ||= UserConfig.first(:global_user_id => @badge.global_user_id)
         end
         if !params['user']
           @stats = Stats.badge_earnings(@badge_config)
@@ -148,6 +152,11 @@ module Sinatra
         org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         @modules_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/modules", @user_config, true)
+        if @badge_placement_config.credit_based?
+          @modules_json.each do |mod|
+            
+          end
+        end
         erb :_badge_modules, :layout => false
       end
       
@@ -184,7 +193,7 @@ module Sinatra
     
     module Helpers
       def org_check
-        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
         halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}") unless @org
       end
       
@@ -192,6 +201,10 @@ module Sinatra
         raise "no user" unless @user_config
         raise "missing value" unless @domain_id && @badge_placement_config_id && @course_id && @badge_placement_config_id
         erb :_badge_settings
+      end
+      
+      def comma(number)
+        number.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse
       end
       
       def error(text)

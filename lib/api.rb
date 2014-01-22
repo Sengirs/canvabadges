@@ -13,7 +13,7 @@ module Sinatra
         if org_id == 'default'
           return api_response(Organization.new(:host => request.host_with_port).as_json)
         end
-        config = Organization.first(:id => org_id)
+        config = Organization.first(:id => org_id, :order => :id)
         halt 404, api_response({:error => "not found"}) unless config && config.settings
         api_response(config.as_json)
       end
@@ -56,11 +56,12 @@ module Sinatra
         user = UserConfig.first(:domain_id => domain.id, :user_id => params['user_id'])
         badges_list = []
         if domain
-          if user && user.global_user_id
-            badges = Badge.all(:state => 'awarded', :global_user_id => user.global_user_id, :public => true)
-          else
+          # TODO: Canvas needs a reliable way to get global user ids
+          #if user && user.global_user_id
+          #  badges = Badge.all(:state => 'awarded', :global_user_id => user.global_user_id, :public => true)
+          #else
             badges = Badge.all(:state => 'awarded', :user_id => params['user_id'], :domain_id => domain.id, :public => true)
-          end
+          #end
           badges.each do |badge|
             badges_list << badge_hash(badge.user_id, badge.user_name, badge)
           end
@@ -106,7 +107,7 @@ module Sinatra
     
     module Helpers
       def get_org
-        @org = Organization.first(:host => request.env['HTTP_HOST'])
+        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
         halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}"}.to_json) unless @org
       end
       
