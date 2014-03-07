@@ -105,13 +105,17 @@ module Sinatra
   
         settings = (@badge_placement_config && @badge_placement_config.merged_settings) || {}
         if @badge_config && @badge_config.configured? && (@badge_placement_config.configured? || @badge_placement_config.award_only?)
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
+          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
-            if !student['email']
+            uc = UserConfig.first(:user_id => params['user_id'], :domain_id => @badge_placement_config.domain_id)
+            email = student['email'] 
+            email ||= student['login_id'] if student['login_id'] && student['login_id'].match(/@/)
+            email ||= uc && uc.email
+            if !email
               return error("That user doesn't have an email in Canvas, and so can't be awarded badges. Please notify the student that they need to set up an email address and then try again.")
             end
-            badge = Badge.manually_award(params, @badge_placement_config, student['name'], student['email'])
+            badge = Badge.manually_award(params, @badge_placement_config, student['name'], email)
             
             redirect to("/badges/check/#{@badge_placement_config_id}/#{@user_id}")
           else
