@@ -116,4 +116,10 @@ ec.shared_secret = "<developer key secret>"
 ec.save
 ```
 
+## Branches
+
+* Master: Production branch for unow
+* ffbadges: Production branch for first finance
+* stable: branch version = whitmer master branch, make pull requests from this one
+
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
