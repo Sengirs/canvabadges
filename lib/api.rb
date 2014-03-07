@@ -141,22 +141,40 @@ module Sinatra
         next_url = nil
         params['page'] = '1' if params['page'].to_i == 0
         if awarded
-          badges = badges.all(:state => 'awarded')
+          if params['search']
+            if DataMapper.repository.adapter.options['adapter'] == 'postgres'
+              badges = badges.all(:conditions => ['user_full_name ILIKE ?', "%#{params['search']}%"])
+            else
+              badges = badges.all(:user_full_name.like => "%#{params['search']}%")
+            end
+          end
+          badges = badges.all(:state => 'awarded', :order => 'user_full_name')
           if badges.length > (params['page'].to_i * 50)
             next_url = "/api/v1/badges/awarded/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
+            if params['search']
+              next_url += "&search=#{CGI.escape(params['search'])}"
+            end
           end
           badges = badges[((params['page'].to_i - 1) * 50), 50]
           badges.each do |badge|
             result << badge_hash(badge.user_id, badge.user_name, badge, @badge_placement_config && @badge_placement_config.nonce)
           end
         else
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
+          json = []
+          if params['search']
+            json = api_call("/api/v1/search/recipients?search=#{CGI.escape(params['search'])}&context=course_#{@course_id}_students&type=user", @user_config)
+          else
+            json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&page=#{params['page'].to_i}", @user_config)
+          end
           json.each do |student|
             badge = badges.detect{|b| b.user_id.to_i == student['id'] }
             result << badge_hash(student['id'], student['name'], badge, @badge_placement_config && @badge_placement_config.nonce)
           end
           if json.more?
             next_url = "/api/v1/badges/current/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
+            if params['search']
+              next_url += "&search=#{CGI.escape(params['search'])}"
+            end
           end
         end
         return {
@@ -169,7 +187,7 @@ module Sinatra
           abs_url = badge.badge_url || "/badges/default.png"
           abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//) || abs_url.match(/^data/)
           {
-            :id => user_id,
+            :id => user_id.to_s,
             :name => user_name,
             :manual => badge.manual_approval,
             :public => badge.public,
@@ -184,7 +202,7 @@ module Sinatra
           }
         else
           {
-            :id => user_id,
+            :id => user_id.to_s,
             :name => user_name,
             :manual => nil,
             :public => nil,
@@ -204,8 +222,8 @@ module Sinatra
         ENV['RACK_ENV'].to_s == "development" ? "http" : "https"
       end
       
-      def api_call(path, user_config, post_params=nil)
-        res = CanvasAPI.api_call(path, user_config, post_params)
+      def api_call(path, user_config, all_pages=false)
+        res = CanvasAPI.api_call(path, user_config, all_pages)
         if res == false
           oauth_dance(request, user_config.host)
         else

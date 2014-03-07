@@ -122,4 +122,10 @@ ec.save
 * ffbadges: Production branch for first finance
 * stable: branch version = whitmer master branch, make pull requests from this one
 
+## TODO
+
+- Add search for teacher working in large classes
+- "Awarded students" list order isn't obvious or useful
+- Update screencast and setup instructions
+
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)
