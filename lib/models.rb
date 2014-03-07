@@ -527,7 +527,7 @@ class Badge
     self.nonce ||= Digest::MD5.hexdigest(self.salt + rand.to_s)
     self.issued ||= DateTime.now if self.awarded?
 
-    sha = Digest::SHA256.hexdigest(self.email + self.salt)
+    sha = Digest::SHA256.hexdigest(self.email.downcase + self.salt)
     self.recipient = "sha256$#{sha}"
 
     self.badge_placement_config ||= BadgePlacementConfig.first(:placement_id => self.placement_id, :domain_id => self.domain_id)
@@ -592,7 +592,7 @@ class Badge
     badge.issuer_name = BadgeHelper.issuer['name']
     badge.badge_config = badge_placement_config.badge_config
     badge.name = settings['badge_name']
-    badge.email = email
+    badge.email = email.downcase
     badge.state ||= 'unissued'
     badge.credits_earned = params['credits_earned'].to_i
     badge.user_full_name = name || params['user_name']
