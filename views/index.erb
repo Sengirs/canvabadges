@@ -44,6 +44,7 @@
     <h2>Some Badges in Public Canvas Courses</h2>
     <% 3.times do |i| %>
       <div class="row">
+	<% next if @public_badge_placements[i * 6,6].nil? %>
         <% @public_badge_placements[i * 6,6].each do |placement| %>
           <% settings = placement.merged_settings %>
           <div class="span2 cool_badge" data-placement_id="<%= placement.id %>" data-config_id="<%= placement.badge_config_id %>">
