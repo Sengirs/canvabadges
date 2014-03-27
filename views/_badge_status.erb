@@ -2,10 +2,10 @@
 <% if @badge && @badge.awarded? %>
   <h3>Ce badge vous a été décerné ! Félicitations</h3>
   <% if @badge.badge_placement_config_id != @badge_placement_config.id %>
-    You earned this badge somewhere else than this spot in this course.
+  	Vous avez déjà obtenu ce badge depuis un autre module du cours.
   <% elsif !@badge.manual_approval %>
     <% if @badge_placement_config.credit_based? %>
-      To earn this badge you needed <%= settings['required_credits'] %> credits, which you've now done.
+      Pour obtenir ce badge, il vous fallait <%= settings['required_credits'] %> crédits, ce que vous avez désormais accompli.
     <% elsif @badge_placement_config.modules_required? %>
       Pour obtenir ce badge, vous deviez obtenir 
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
@@ -17,36 +17,37 @@
       <% end %>
       validé les modules demandés.
     <% else %>
-      To earn this badge you needed a final score of <%= settings['min_percent'] %>%, and you have <%= @student['computed_final_score'].to_f %>% in this course right now.
+      Pour obtenir ce badge vous deviez avoir un score final de <%= settings['min_percent'] %>%, 
+      et vous avez actuellement <%= @student['computed_final_score'].to_f %>% pour ce cours.
     <% end %>
     <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: 100%;'></div></div>
   <% end %>
   <% host = (@badge.badge_config && @badge.badge_config.organization && @badge.badge_config.organization.host) || request.host_with_port %>
   <% url = "#{protocol}://#{host}/api/v1/badges/data/#{@badge_config_id}/#{@user_id}/#{@badge.nonce}.json" %>
-  <form class='form-inline' action='/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> show this badge on my Canvas profile</label><br/>
-    <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
-    &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='Add this badge to your Mozilla backpack'/></a>
-    <span style="vertical-align: bottom; color: #888;">earned for email: <%= @badge.email %></span>
+  <form class='form-inline' action='/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> afficher ce badge sur mon profil Unow</label><br/>
+    <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>Voir tous mes badges</a>
+    &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='Ajouter ce badge à Mozilla Backpack'/></a>
+    <span style="vertical-align: bottom; color: #888;">obtenu pour l'email: <%= @badge.email %></span>
   </form>
 <% elsif @badge && @badge.pending? %>
-  <h3>You've almost earned this badge!</h3>
+  <h3>Vous avez presque obtenu ce badge!</h3>
   <% if !@badge.manual_approval %>
     <% if @badge_placement_config.credit_based? %>
-      To earn this badge you needed <%= settings['required_credits'] %> credits, which you've now done.
+      Pour obtenir ce badge, il vous fallait <%= settings['required_credits'] %> crédits, ce que vous avez désormais accompli.
       <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: <%= (@badge.credits_earned / settings['required_credits'] * 100).to_i.to_s %>%;'></div></div>
     <% elsif @badge_placement_config.modules_required? %>
-      To earn this badge you needed 
+      Pour obtenir ce badge vous deviez avoir 
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        a final score of <%= settings['min_percent'] %>%, and 
+        un score final de <%= settings['min_percent'] %>%, et 
       <% end %>
-      to complete the required modules. You have 
+      ainsi qu'avoir complété les modules requis. Vous avez actuellement 
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        <%= @student['computed_final_score'].to_f %>% in this course right now and have 
+        <%= @student['computed_final_score'].to_f %>% pour ce cours et avez 
       <% end %>
-      completed the required modules.
+      complété les modules requis.
       <div class='progress progress-warning progress-striped progress-big'><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% else %>
-      To earn this badge you needed a final score of <%= settings['min_percent'] %>%, and you have <%= @student['computed_final_score'].to_f %>% in this course right now.
+      Pour obtenir ce badge vous deviez avoir un score final de <%= settings['min_percent'] %>%, et vous avez actuellement <%= @student['computed_final_score'].to_f %>% pour ce cours.
       <div class='progress progress-warning progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% end %>
   <% end %>
@@ -59,15 +60,15 @@
 <% else %>
   <h3>Vous n'avez pas encore obtenu ce badge</h3>
   <% if @badge_placement_config.credit_based? %>
-    To earn this badge you need to earn <%= settings['required_credits'] %> credits. Credits are available for the following activities:
+    Pour obtenir ce badge vous devez avoir <%= settings['required_credits'] %> crédits. Les crédits sont disponibles via les activités suivantes :
     <% completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score']) %>
     <% credits = completed_score ? settings['credits_for_final_score'] : 0 %>
     <ul class="badge_earn_list">
-      <li><img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%): <%= settings['credits_for_final_score'] %> credits</li>
+      <li><img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> Le score final doit être au moins de <%= settings['min_percent'] %>% (actuellement <%= @student['computed_final_score'].to_f %>%): <%= settings['credits_for_final_score'] %> crédits</li>
     <% @badge_placement_config.required_modules.each do |id, name, credit| %>
       <% complete = @completed_module_ids.include?(id.to_i) %>
       <% credits += credit if complete %>
-      <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>): <%= credit %> credits</li>
+      <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Terminez le module <%= name %> (<%= complete ? 'terminé' : 'non terminé' %>): <%= credit %> crédits</li>
     <% end %>
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(credits / settings['required_credits'] * 100).to_i, 5].max.to_s %>%;'></div></div>
@@ -98,9 +99,9 @@
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(100.0 * achieved.to_f / total.to_f).to_i, 5].max.to_s  %>%;'></div></div>
   <% else %>
-    To earn this badge you need <%= settings['min_percent'] %>%, but you only have <%= @student['computed_final_score'].to_f %>% in this course right now.
+    Pour obtenir ce badge vous devez avoir <%= settings['min_percent'] %>%, et vous avez seulement <%= @student['computed_final_score'].to_f %>% pour ce cours.
     <div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
   <% end %>
   <%= erb :_evidence_url %>
-  <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>See All Your Badges</a>
+  <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>Voir mes badges</a>
 <% end %>
