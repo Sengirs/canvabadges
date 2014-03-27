@@ -598,6 +598,7 @@ class Badge
 
     badge.issuer_name = BadgeHelper.issuer['name']
     badge.badge_config = badge_placement_config.badge_config
+    badge.public = badge.badge_config.public || false
     badge.name = settings['badge_name']
     badge.email = email
     badge.state ||= 'unissued'
