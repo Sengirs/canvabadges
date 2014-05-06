@@ -121,16 +121,16 @@
 				margin-bottom: 15px;
 			}
 			.cool_badge {
-	            text-align: center;
-	        }
-	        .cool_badge .thumbnail {
-	            height: 90px;
-	            max-width: 90px;
-	            display: inline;
-	        }
+				text-align: center;
+			}
+			.cool_badge .thumbnail {
+				height: 90px;
+				max-width: 90px;
+				display: inline;
+			}
 		</style>
 	</head>
-	<body>
+	<body data-path_prefix="<%= request.env['badges.path_prefix'] %>">
 		<div class="container" id="content">
 			<div id="contents">
 				<%= yield %>
@@ -139,8 +139,8 @@
 				<% issuer = BadgeHelper.issuer %>
 				powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
 				<% if @full_footer %>
-				| <a href="/about">About</a>
-				| <a href="/stats">Stats</a>
+				| <a href="<%= request.env['badges.path_prefix'] %>/about">About</a>
+				| <a href="<%= request.env['badges.path_prefix'] %>/stats">Stats</a>
 				<% end %>
 			</footer>
 		</div>
@@ -150,17 +150,18 @@
 		<script src="/badges.js"></script>
 		<script type="text/javascript" src="/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
 		<% if @org && @org.settings && @org.settings['tracking_id'] %>
-			<script type="text/javascript">
-				var _gaq = _gaq || [];
-				_gaq.push(['_setAccount', '<%= @org.settings['tracking_id'] %>']);
-				_gaq.push(['_trackPageview']);
-			
-				(function() {
-					var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-					ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-					var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-				})();
-			</script>
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', '<%= @org.settings['tracking_id'] %>
+			']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
 		<% end %>
 	</body>
 </html>
