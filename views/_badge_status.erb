@@ -22,10 +22,10 @@
     <% end %>
     <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: 100%;'></div></div>
   <% end %>
-  <% host = (@badge.badge_config && @badge.badge_config.organization && @badge.badge_config.organization.host) || request.host_with_port %>
+  <% host = (@badge.badge_config && @badge.badge_config.organization && @badge.badge_config.organization.host) || request.env['badges.domain'] %>
   <% url = "#{protocol}://#{host}/api/v1/badges/data/#{@badge_config_id}/#{@user_id}/#{@badge.nonce}.json" %>
-  <form class='form-inline' action='/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> afficher ce badge sur mon profil Unow</label><br/>
-    <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>Voir tous mes badges</a>
+  <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<%= @badge.nonce %>'><label><input class='public_badge' <%= 'checked' if @badge.public %> type='checkbox'/> afficher ce badge sur mon profil Unow</label><br/>
+    <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'>Voir tous mes badges</a>
     &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='Ajouter ce badge à Mozilla Backpack'/></a>
     <span style="vertical-align: bottom; color: #888;">obtenu pour l'email: <%= @badge.email %></span>
   </form>
@@ -103,5 +103,5 @@
     <div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
   <% end %>
   <%= erb :_evidence_url %>
-  <a class='btn btn-primary btn-large' href='/badges/all/<%= @domain_id %>/<%= @user_id %>'>Voir mes badges</a>
+  <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'>Voir mes badges</a>
 <% end %>

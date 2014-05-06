@@ -11,7 +11,7 @@ module Sinatra
         get_org
         org_id = params['id'].split(/-/)[0]
         if org_id == 'default'
-          return api_response(Organization.new(:host => request.host_with_port).as_json)
+          return api_response(Organization.new(:host => request.env['badges.domain']).as_json)
         end
         config = Organization.first(:id => org_id, :order => :id)
         halt 404, api_response({:error => "not found"}) unless config && config.settings
@@ -39,14 +39,14 @@ module Sinatra
       # OBI-Compliant Result Required
       app.head "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
         get_org
-        api_response(badge_data(params, @org.host))
+        api_response(badge_data(params, request.env['badges.original_domain']))
       end
 
       # GET open badge award details permalink
       # OBI-Compliant Result Required
       app.get "/api/v1/badges/data/:badge_config_id/:user_id/:code.json" do
         get_org
-        api_response(badge_data(params, @org.host))
+        api_response(badge_data(params, request.env['badges.original_domain']))
       end
 
       # list of publicly available badges for the current user
@@ -107,8 +107,9 @@ module Sinatra
     
     module Helpers
       def get_org
-        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
-        halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['HTTP_HOST']}"}.to_json) unless @org
+        @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
+        @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
+        halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}"}.to_json) unless @org
       end
       
       def api_response(hash)
@@ -150,7 +151,7 @@ module Sinatra
           end
           badges = badges.all(:state => 'awarded', :order => 'user_full_name')
           if badges.length > (params['page'].to_i * 50)
-            next_url = "/api/v1/badges/awarded/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
+            next_url = "#{request.env['badges.path_prefix']}/api/v1/badges/awarded/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
             if params['search']
               next_url += "&search=#{CGI.escape(params['search'])}"
             end
@@ -171,7 +172,7 @@ module Sinatra
             result << badge_hash(student['id'], student['name'], badge, @badge_placement_config && @badge_placement_config.nonce)
           end
           if json.more?
-            next_url = "/api/v1/badges/current/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
+            next_url = "#{request.env['badges.path_prefix']}/api/v1/badges/current/#{@badge_placement_config_id}.json?page=#{params['page'].to_i + 1}"
             if params['search']
               next_url += "&search=#{CGI.escape(params['search'])}"
             end
@@ -185,7 +186,7 @@ module Sinatra
       def badge_hash(user_id, user_name, badge, nonce=nil)
         if badge
           abs_url = badge.badge_url || "/badges/default.png"
-          abs_url = "#{protocol}://#{request.host_with_port}" + abs_url unless abs_url.match(/\:\/\//) || abs_url.match(/^data/)
+          abs_url = "#{protocol}://#{request.env['badges.domain']}" + abs_url unless abs_url.match(/\:\/\//) || abs_url.match(/^data/)
           {
             :id => user_id.to_s,
             :name => user_name,
@@ -233,7 +234,8 @@ module Sinatra
       
       def oauth_config
         get_org
-        @oauth_config = OAuthConfig.oauth_config(@org)
+        domain = request.env['badges.domain'].split(/\//)[0]
+        @oauth_config = OAuthConfig.oauth_config(@org, domain)
       end
     end
   end
