@@ -12,27 +12,27 @@
     <h2><%= @current_badge.user_name %></h2>
   <% end %>
   <% if @earned %>
-    <p class="desc"><img src='/check.gif'/> Ce participant a rempli les conditions pour gagner ce badge<% if @current_badge.issued %>, et il lui a été decerné <%= @current_badge.issued.strftime("%d %b, %Y") %><% end %>.</p>
+    <p class="desc"><img src='/check.gif'/> This student met the conditions required to earn this badge <% if @current_badge.issued %>, and the badge was awarded to him. <%= @current_badge.issued.strftime("%d %b, %Y") %><% end %>.</p>
   <% else %>
-    <p class="desc"><img src='/redx.gif'/> Ce participant n'a pas encore rempli les conditions nécéssaires pour recevoir ce badge.</p>
+    <p class="desc"><img src='/redx.gif'/> This student has not met the conditions required to earn this badge yet.</p>
   <% end %>
   <div style="clear: left;"></div>
 <% end %>
 
 <% if settings['badge_requirements'] && settings['badge_requirements'] != '' %>
-  <h3>Conditions d'obtention de ce badge :</h3>
+  <h3>Requirements to earn this badge :</h3>
   <p class='desc'>
     <%= settings['badge_requirements'] %>
   </p>
 <% end %>
 <% if settings['hours'] %>
-  <h3>Temps de travail estimé (en heures) : <%= settings['hours'] %></h3>
+  <h3>Estimated workload (hours) : <%= settings['hours'] %></h3>
 <% end %>
 <% org = @badge_config.organization %>
 <% settings = (org && org.settings) || BadgeHelper.issuer %>
 <p class="verification">
   <img src='<%= settings['image'] %>'/>
-  Ce badge <%= @current_badge && @current_badge.awarded? ? "a été" : "est" %> decerné par 
+  This badge <%= @current_badge && @current_badge.awarded? ? "has been" : "is" %> awarded by 
   <%= settings['name'] %></a>. 
 <% if false %>
 It is hosted at

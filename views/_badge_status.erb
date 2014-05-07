@@ -1,21 +1,21 @@
 <% settings = @badge_placement_config.merged_settings || {} %>
 <% if @badge && @badge.awarded? %>
-  <h3>Ce badge vous a été décerné ! Félicitations</h3>
+  <h3>Congratulations ! You  earned this badge !</h3>
   <% if @badge.badge_placement_config_id != @badge_placement_config.id %>
     You earned this badge somewhere else than this spot in this course.
   <% elsif !@badge.manual_approval %>
     <% if @badge_placement_config.credit_based? %>
       To earn this badge you needed <%= settings['required_credits'] %> credits, which you've now done.
     <% elsif @badge_placement_config.modules_required? %>
-      Pour obtenir ce badge, vous deviez obtenir 
+      To earn this badge, you needed 
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-      	un score final de <%= settings['min_percent'] %>%, et
+      	a final score of <%= settings['min_percent'] %>%, and
       <% end %>
-      et valider les modules demandés. Vous avez
+      to complete the required modules. You have
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        actuellement un score de <%= @student['computed_final_score'].to_f %>% dans ce cours et vous avez
+        currently a score of <%= @student['computed_final_score'].to_f %>% in this course and you have
       <% end %>
-      validé les modules demandés.
+      completed the required modules.
     <% else %>
       To earn this badge you needed a final score of <%= settings['min_percent'] %>%, and you have <%= @student['computed_final_score'].to_f %>% in this course right now.
     <% end %>
@@ -57,7 +57,7 @@
     <p><b>All you need now is to wait for your instructor's manual approval.</b></p>
   <% end %>
 <% else %>
-  <h3>Vous n'avez pas encore obtenu ce badge</h3>
+  <h3>You haven't earned this badge yet.</h3>
   <% if @badge_placement_config.credit_based? %>
     To earn this badge you need to earn <%= settings['required_credits'] %> credits. Credits are available for the following activities:
     <% completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score']) %>
@@ -73,7 +73,7 @@
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(credits / settings['required_credits'] * 100).to_i, 5].max.to_s %>%;'></div></div>
   <% elsif @badge_placement_config.modules_required? %>
 
-    Pour obtenir ce badge, vous devez atteindre les objectifs suivants :
+    To earn this badge, you need to complete the following goals :
     <% 
       completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score'])
       total = @badge_placement_config.required_modules.length + 1
@@ -87,13 +87,13 @@
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
     	<li>
     		<img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/> 
-    		Score total d'au moins <%= settings['min_percent'] %>% (actuellement <%= @student['computed_final_score'].to_f %>%)
+    		Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%)
     	</li>
       <% end %>
       <% @badge_placement_config.required_modules.each do |id, name, credit| %>
         <% complete = @completed_module_ids.include?((id || "").to_i) %>
         <% achieved +=1 if complete %>
-        <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Valider le module <%= name %> (<%= complete ? 'validé' : 'non validé' %>)</li>
+        <li><img src='<%= complete ? '/check.gif' : '/redx.png' %>'/> Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>)</li>
       <% end %>
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(100.0 * achieved.to_f / total.to_f).to_i, 5].max.to_s  %>%;'></div></div>
