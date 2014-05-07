@@ -1,8 +1,8 @@
-ruby '1.9.3'
+ruby '2.1.1'
 source "http://rubygems.org"
 
 gem "sinatra"
-gem "oauth",   "0.4.5"
+gem "oauth"
 gem "json"
 gem "ims-lti"
 gem "canvas-api"
@@ -12,7 +12,7 @@ gem 'dm-migrations'
 gem 'dm-aggregates'
 gem 'dm-postgres-adapter'
 gem 'erubis'
-gem 'dm-types', "1.2.0"
+gem 'dm-types'
 gem 'rack-ssl-enforcer'
 gem 'rack-iframe'
 
@@ -23,4 +23,3 @@ group :development do
     gem 'selenium-webdriver'
     gem 'capybara'
 end
-

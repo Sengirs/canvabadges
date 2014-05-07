@@ -48,6 +48,7 @@ class Organization
   include DataMapper::Resource
   property :id, Serial
   property :host, String, :index => true
+  property :old_host, String
   property :settings, Json
   
   def as_json
@@ -84,6 +85,7 @@ class ExternalConfig
   include DataMapper::Resource
   property :id, Serial
   property :config_type, String
+  property :domain, String
   property :app_name, String
   property :organization_id, Integer
   property :value, String
@@ -210,6 +212,15 @@ class BadgeConfig
       :alignment => [], # TODO
       :tags => [] # TODO
     }
+  end
+  
+  def self.uncool(id, uncool=true)
+    bc = BadgeConfig.first(:id => id)
+    if bc
+      bc.uncool = uncool ? true : nil
+      bc.save
+    end
+    bc.uncool
   end
   
   def to_json(host_with_port)
@@ -378,10 +389,6 @@ class BadgePlacementConfig
       self.settings['already_loaded_from_old_config'] = true
       self.save
     end
-  end
-  
-  def to_json(host_with_port)
-    as_json(host_with_port).to_json
   end
   
   def approve_to_pending?
