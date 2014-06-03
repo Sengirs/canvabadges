@@ -16,6 +16,7 @@ module Sinatra
       
       # configure badge settings.
       app.post "/badges/settings/:badge_placement_config_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         
         @badge_config = @badge_placement_config.badge_config
@@ -41,17 +42,27 @@ module Sinatra
         placement_settings['credits_for_final_score'] = params['credits_for_final_score'].to_f.round(1)
         total_credits = placement_settings['credits_for_final_score']
         modules = []
+        outcomes = []
         params.each do |k, v|
           if k.match(/module_/)
             id = k.sub(/module_/, '').to_i
             if id > 0
-              total_credits += params["credits_for_#{id}"].to_f.round(1)
-              credits = params["credits_for_#{id}"].to_f.round(1)
+              total_credits += params["credits_for_mod_#{id}"].to_f.round(1)
+              credits = params["credits_for_mod_#{id}"].to_f.round(1)
               modules << [id, CGI.unescape(v), credits]
             end
+          elsif k.match(/outcome_/)
+            id = k.sub(/outcome_/, '').to_i
+            if id > 0
+              total_credits += params["credits_for_oc_#{id}"].to_f.round(1)
+              credits = params["credits_for_oc_#{id}"].to_f.round(1)
+              outcomes << [id, CGI.unescape(v), credits]
+            end
           end
+          
         end
         placement_settings['modules'] = modules.length > 0 ? modules : nil
+        placement_settings['outcomes'] = outcomes.length > 0 ? outcomes : nil
         placement_settings['total_credits'] = total_credits
         
         @badge_placement_config.settings = placement_settings
@@ -72,6 +83,7 @@ module Sinatra
       
       # set a badge to public or private
       app.post "/badges/:badge_id" do
+        org_check
         badge = Badge.first(:nonce => params['badge_id'])
         if !badge
           halt 400, {:error => "invalid badge"}.to_json
@@ -90,6 +102,7 @@ module Sinatra
       end
       
       app.post "/badges/disable/:badge_placement_config_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         settings = @badge_placement_config.settings
         settings['pending'] = true
@@ -100,6 +113,7 @@ module Sinatra
       
       # manually award a user with the course's badge
       app.post "/badges/award/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         @badge_config = @badge_placement_config.badge_config
   

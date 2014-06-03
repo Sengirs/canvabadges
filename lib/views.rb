@@ -164,6 +164,13 @@ module Sinatra
         erb :_badge_modules, :layout => false
       end
       
+      app.get "/badges/outcomes/:badge_placement_config_id/:user_id" do
+        org_check
+        load_badge_config(params['badge_placement_config_id'], 'edit')
+        @outcomes_json ||= CanvasAPI.api_call("/api/v1/courses/#{@course_id}/outcome_group_links", @user_config, true)
+        erb :_badge_outcomes, :layout => false
+      end
+      
       app.get "/badges/status/:badge_placement_config_id/:user_id" do
         org_check
         load_badge_config(params['badge_placement_config_id'], 'view')
@@ -180,6 +187,7 @@ module Sinatra
             end
             @student = args[:student]
             @completed_module_ids = args[:completed_module_ids]
+            @completed_outcome_ids = args[:completed_outcome_ids]
             @badge = args[:badge]
           end
           if @student
@@ -200,6 +208,7 @@ module Sinatra
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}") unless @org
+        CanvasAPI.set_org(@org)
       end
       
       def edit_course_html
@@ -228,7 +237,7 @@ module Sinatra
       end
       
       def oauth_dance(request, host)
-        return_url = "#{protocol}://#{request.env['badges.domain']}/oauth_success"
+        return_url = "#{protocol}://#{request.env['badges.original_domain']}/oauth_success"
         redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
       end 
   

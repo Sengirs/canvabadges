@@ -401,6 +401,7 @@ describe 'Badging OAuth' do
   
   describe "GET oauth_success" do
     it "should error if session details are not preserved" do
+      example_org
       get "/oauth_success"
       assert_error_page("Session Information Lost")
     end
@@ -409,7 +410,7 @@ describe 'Badging OAuth' do
       example_org
       user
       fake_response = OpenStruct.new(:body => {}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => @user.user_id, 'source_id' => 'cloud', 'launch_badge_placement_config_id' => 'uiop'}
       assert_error_page("Error retrieving access token")
     end
@@ -417,7 +418,7 @@ describe 'Badging OAuth' do
     it "should provision a new user if successful" do
       example_org
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => 'fghj', 'source_id' => 'cloud', 'launch_badge_placement_config_id' => 'uiop'}
       @user = UserConfig.last
       @user.should_not be_nil
@@ -432,7 +433,7 @@ describe 'Badging OAuth' do
       example_org
       user
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => @user.user_id, 'source_id' => 'cloud', 'launch_badge_placement_config_id' => 'uiop'}
       @new_user = UserConfig.last
       @new_user.should_not be_nil
@@ -444,7 +445,7 @@ describe 'Badging OAuth' do
     it "should redirect to the badge check endpoint if successful" do
       example_org
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => {"domain_id" => @domain.id, 'user_id' => 'fghj', 'source_id' => 'cloud', 'launch_badge_placement_config_id' => 'uiop'}
       @user = UserConfig.last
       @user.user_id.should == 'fghj'
@@ -468,7 +469,7 @@ describe 'Badging OAuth' do
       last_response.should be_redirect
 
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get_with_session "/oauth_success?code=asdfjkl"
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/all/1/#{@user.user_id}"
@@ -486,7 +487,7 @@ describe 'Badging OAuth' do
       last_response.should be_redirect
 
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => session
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/pick?return_url=#{CGI.escape("http://www.example.com")}"
@@ -504,7 +505,7 @@ describe 'Badging OAuth' do
       last_response.should be_redirect
 
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => session
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/course/1"
@@ -522,7 +523,7 @@ describe 'Badging OAuth' do
       last_response.should be_redirect
 
       fake_response = OpenStruct.new(:body => {:access_token => '1234', 'user' => {'id' => 'zxcv'}}.to_json)
-      Net::HTTP.any_instance.should_receive(:request).and_return(fake_response)
+      Typhoeus.should_receive(:post).and_return(fake_response)
       get "/oauth_success?code=asdfjkl", {}, 'rack.session' => session
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/course/1"
@@ -563,6 +564,7 @@ describe 'Badging OAuth' do
   
   describe "session fix" do
     it "should set session" do
+      example_org
       get "/session_fix"
       last_response.body.should match(/Session Fixer/)
       session['has_session'].should == true
