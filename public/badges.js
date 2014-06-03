@@ -22,7 +22,7 @@ $(document).on('click', "#disable_badge", function() {
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     success: function() {
       location.reload();
     },
@@ -36,7 +36,7 @@ $(document).on('change', "#evidence_url", function() {
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     data: {
       evidence_url: $(this).val()
     },
@@ -86,7 +86,7 @@ function loadResults(url) {
   $.ajax({
     type: 'GET',
     dataType: 'json',
-    url: url,
+    url: window.path_prefix + url,
     success: function(data) {
       $("#badges tbody .loading").remove();
       var badge_placement_config_id = $("#badges").attr('data-badge_placement_config_id');
@@ -150,7 +150,7 @@ if(badge_status) {
   $.ajax({
     type: 'GET',
     dataType: 'html',
-    url: badge_status,
+    url: window.path_prefix + badge_status,
     success: function(data) {
       $("#student_badge").html(data);
     },
@@ -165,14 +165,34 @@ if(modules) {
   $.ajax({
     type: 'GET',
     dataType: 'html',
-    url: modules,
+    url: window.path_prefix + modules,
     success: function(data) {
-      $("#modules_settings").html(data);
-      $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
-      $("#credit_based").change();
+      $("#modules_settings").html(data).addClass('ready');
+      if($("#modules_settings").hasClass('ready') && $("#outcomes_settings").hasClass('ready')) {
+        $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
+        $("#credit_based").change();
+      }
     },
     error: function(data) {
       $("#modules_settings .controls").html("Error retrieving course modules. Please reload.");
+    }
+  });
+}
+var outcomes = $("#outcomes_settings").attr('rel');
+if(outcomes) {
+  $.ajax({
+    type: 'GET',
+    dataType: 'html',
+    url: window.path_prefix + outcomes,
+    success: function(data) {
+      $("#outcomes_settings").html(data).addClass('ready');
+      if($("#modules_settings").hasClass('ready') && $("#outcomes_settings").hasClass('ready')) {
+        $("#badge_settings .form-actions button[type='submit']").attr('disabled', false);
+        $("#credit_based").change();
+      }
+    },
+    error: function(data) {
+      $("#outcomes_settings .controls").html("Error retrieving course outcomes. Please reload.");
     }
   });
 }
@@ -214,7 +234,7 @@ $(document).on('click', '.select_badge_config', function(event) {
   }
 
   var host = location.origin || (location.protocol + "//" + location.host);
-  var launch = host + "/placement_launch";
+  var launch = host + window.path_prefix + "/placement_launch";
   var $config = $(this).closest(".badge_config");
   var badge_id = $config.attr('data-id') || $config.attr('data-proposed_id')
   var badge_name = ($config.find(".name").val() || $config.find('.name').text() || "New Badge");
