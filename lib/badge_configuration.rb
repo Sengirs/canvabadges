@@ -16,6 +16,7 @@ module Sinatra
       
       # configure badge settings.
       app.post "/badges/settings/:badge_placement_config_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         
         @badge_config = @badge_placement_config.badge_config
@@ -41,17 +42,27 @@ module Sinatra
         placement_settings['credits_for_final_score'] = params['credits_for_final_score'].to_f.round(1)
         total_credits = placement_settings['credits_for_final_score']
         modules = []
+        outcomes = []
         params.each do |k, v|
           if k.match(/module_/)
             id = k.sub(/module_/, '').to_i
             if id > 0
-              total_credits += params["credits_for_#{id}"].to_f.round(1)
-              credits = params["credits_for_#{id}"].to_f.round(1)
+              total_credits += params["credits_for_mod_#{id}"].to_f.round(1)
+              credits = params["credits_for_mod_#{id}"].to_f.round(1)
               modules << [id, CGI.unescape(v), credits]
             end
+          elsif k.match(/outcome_/)
+            id = k.sub(/outcome_/, '').to_i
+            if id > 0
+              total_credits += params["credits_for_oc_#{id}"].to_f.round(1)
+              credits = params["credits_for_oc_#{id}"].to_f.round(1)
+              outcomes << [id, CGI.unescape(v), credits]
+            end
           end
+          
         end
         placement_settings['modules'] = modules.length > 0 ? modules : nil
+        placement_settings['outcomes'] = outcomes.length > 0 ? outcomes : nil
         placement_settings['total_credits'] = total_credits
         
         @badge_placement_config.settings = placement_settings
@@ -67,11 +78,12 @@ module Sinatra
         @badge_config.updated_at = DateTime.now
         @badge_config.public = params['public'] == '1'
         @badge_config.save
-        redirect to("/badges/check/#{@badge_placement_config_id}/#{@user_id}")
+        redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@badge_placement_config_id}/#{@user_id}")
       end
       
       # set a badge to public or private
       app.post "/badges/:badge_id" do
+        org_check
         badge = Badge.first(:nonce => params['badge_id'])
         if !badge
           halt 400, {:error => "invalid badge"}.to_json
@@ -90,6 +102,7 @@ module Sinatra
       end
       
       app.post "/badges/disable/:badge_placement_config_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         settings = @badge_placement_config.settings
         settings['pending'] = true
@@ -100,20 +113,25 @@ module Sinatra
       
       # manually award a user with the course's badge
       app.post "/badges/award/:badge_placement_config_id/:user_id" do
+        org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         @badge_config = @badge_placement_config.badge_config
   
         settings = (@badge_placement_config && @badge_placement_config.merged_settings) || {}
         if @badge_config && @badge_config.configured? && (@badge_placement_config.configured? || @badge_placement_config.award_only?)
-          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&include[]=email&user_id=#{params['user_id']}", @user_config)
+          json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
-            if !student['email']
+            uc = UserConfig.first(:user_id => params['user_id'], :domain_id => @badge_placement_config.domain_id)
+            email = student['email'] 
+            email ||= student['login_id'] if student['login_id'] && student['login_id'].match(/@/)
+            email ||= uc && uc.email
+            if !email
               return error("That user doesn't have an email in Canvas, and so can't be awarded badges. Please notify the student that they need to set up an email address and then try again.")
             end
-            badge = Badge.manually_award(params, @badge_placement_config, student['name'], student['email'])
+            badge = Badge.manually_award(params, @badge_placement_config, student['name'], email)
             
-            redirect to("/badges/check/#{@badge_placement_config_id}/#{@user_id}")
+            redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@badge_placement_config_id}/#{@user_id}")
           else
             return error("That user is not a student in this course")
           end

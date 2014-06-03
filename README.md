@@ -95,7 +95,7 @@ the following change:
 ```ruby
 org = Organization.find(:name => "whatever it's called")
 settings = org.settings
-settings['oss_auth'] = true
+settings['oss_oauth'] = true
 org.settings = settings
 org.save
 ```
@@ -115,5 +115,11 @@ ec.value = "<developer key id>"
 ec.shared_secret = "<developer key secret>"
 ec.save
 ```
+
+## TODO
+
+- Add search for teacher working in large classes
+- "Awarded students" list order isn't obvious or useful
+- Update screencast and setup instructions
 
 [![Build Status](https://travis-ci.org/whitmer/canvabadges.png)](https://travis-ci.org/whitmer/canvabadges)

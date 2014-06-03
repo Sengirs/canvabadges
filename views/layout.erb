@@ -131,7 +131,7 @@
           }
           </style>
         </head>
-        <body>
+        <body data-path_prefix="<%= request.env['badges.path_prefix'] %>">
           <div class="container" id="content">
           <div id="contents">
 <%= yield %>
@@ -140,15 +140,15 @@
             <% issuer = BadgeHelper.issuer %>
             powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
             <% if @full_footer %>
-              | <a href="/about">About</a>
-              | <a href="/stats">Stats</a>
+              | <a href="<%= request.env['badges.path_prefix'] %>/about">About</a>
+              | <a href="<%= request.env['badges.path_prefix'] %>/stats">Stats</a>
             <% end %>
           </footer>
         </div>
         <script src="/jquery.min.js"></script>
         <script src="https://backpack.openbadges.org/issuer.js"></script>
         <script src="/common.js"></script>
-        <script src="/badges.js"></script>
+        <script src="/badges.js?123"></script>
         <script type="text/javascript" src="/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
         <% if @org && @org.settings && @org.settings['tracking_id'] %>
           <script type="text/javascript">

@@ -9,6 +9,7 @@ describe 'Badge Configuration' do
 
   describe "badge configuration" do
     it "should require instructor/admin authorization" do
+      example_org
       post "/badges/settings/1"
       last_response.should_not be_ok
       assert_error_page("Configuration not found")
@@ -23,6 +24,7 @@ describe 'Badge Configuration' do
     end
 
     it "should accept configuration parameters" do
+      example_org
       badge_config
       params = {
         'badge_url' => "http://example.com/badge.png",
@@ -32,7 +34,7 @@ describe 'Badge Configuration' do
         'min_percent' => '50',
         'module_123' => "Module 123",
         'module_asdf' => "Bad module",
-        'credits_for_123' => '19',
+        'credits_for_mod_123' => '19',
         'credit_based' => '1'
       }
       Canvas::API.any_instance.should_receive(:get).and_return({})
@@ -52,7 +54,39 @@ describe 'Badge Configuration' do
       @badge_placement_config.settings['modules'].should == [[123, 'Module 123', 19]]
     end
     
+    it "should accept configuration parameters" do
+      prefix_org
+      badge_config
+      params = {
+        'badge_url' => "http://example.com/badge.png",
+        'badge_name' => "My badge",
+        'badge_description' => "My badge description",
+        'manual_approval' => '1',
+        'min_percent' => '50',
+        'module_123' => "Module 123",
+        'module_asdf' => "Bad module",
+        'credits_for_mod_123' => '19',
+        'credit_based' => '1'
+      }
+      Canvas::API.any_instance.should_receive(:get).and_return({})
+      post "/_test/badges/settings/#{@badge_placement_config.id}", params, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => "edit", "user_id" => "9876"}
+      last_response.should be_redirect
+      last_response.location.should == "http://example.org/_test/badges/check/#{@badge_placement_config.id}/9876"
+      @badge_config.reload
+      @badge_placement_config.reload
+      @badge_config.settings['badge_url'].should == "http://example.com/badge.png"
+      @badge_config.settings['badge_name'].should == "My badge"
+      @badge_config.settings['badge_description'].should == "My badge description"
+      @badge_placement_config.settings['manual_approval'].should == true
+      @badge_placement_config.settings['min_percent'].should == 50.0
+      @badge_placement_config.settings['credit_based'].should == true
+      @badge_placement_config.credit_based?.should == true
+      @badge_placement_config.settings['module_asdf'].should == nil
+      @badge_placement_config.settings['modules'].should == [[123, 'Module 123', 19]]
+    end
+    
     it "should fail gracefully on empty parameters" do
+      example_org
       badge_config
       Canvas::API.any_instance.should_receive(:get).and_return({})
       post "/badges/settings/#{@badge_placement_config.id}", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => "edit", "user_id" => "9876"}
@@ -84,6 +118,19 @@ describe 'Badge Configuration' do
       @badge_placement_config.save
       BadgeConfigOwner.create(:user_config_id => @user.id, :badge_config_id => @badge_config.id, :badge_placement_config_id => @badge_placement_config.id)
       get "/badges/pick", {}, 'rack.session' => {'domain_id' => @badge_placement_config.domain_id, 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should match(@badge_placement_config.badge_config.settings['badge_url'])
+      last_response.body.should match(/Create a New Badge/)
+    end
+
+    it "should work with prefixed orgs" do
+      prefix_org
+      user
+      badge_config
+      @badge_placement_config.author_user_config_id = @user.id
+      @badge_placement_config.save
+      BadgeConfigOwner.create(:user_config_id => @user.id, :badge_config_id => @badge_config.id, :badge_placement_config_id => @badge_placement_config.id)
+      get "/_test/badges/pick", {}, 'rack.session' => {'domain_id' => @badge_placement_config.domain_id, 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should match(@badge_placement_config.badge_config.settings['badge_url'])
       last_response.body.should match(/Create a New Badge/)
@@ -125,10 +172,20 @@ describe 'Badge Configuration' do
       last_response.should be_ok
       last_response.body.should == {:disabled => true}.to_json
     end
+
+    it "should work with prefixed orgs" do
+      prefix_org
+      user
+      badge_config
+      post "/_test/badges/disable/#{@badge_placement_config.id}", {}, {'rack.session' => {'user_id' => @user.user_id, "permission_for_#{@badge_placement_config.course_id}" => 'edit'}}
+      last_response.should be_ok
+      last_response.body.should == {:disabled => true}.to_json
+    end
   end
   
   describe "badge privacy" do
     it "should do nothing if an invalid badge" do
+      example_org
       award_badge(badge_config, user)
       post "/badges/#{@badge.nonce}x", {}, 'rack.session' => {'user_id' => @user.user_id}
       last_response.should_not be_ok
@@ -136,6 +193,7 @@ describe 'Badge Configuration' do
     end
     
     it "should not let you change someone else's badge" do
+      example_org
       award_badge(badge_config, user)
       post "/badges/#{@badge.nonce}", {}, 'rack.session' => {'user_id' => "asdf"}
       last_response.should_not be_ok
@@ -143,6 +201,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow setting your badge to public" do
+      example_org
       award_badge(badge_config, user)
       @badge.public.should == nil
       post "/badges/#{@badge.nonce}", {'public' => 'true'}, 'rack.session' => {'user_id' => @user.user_id}
@@ -153,7 +212,20 @@ describe 'Badge Configuration' do
       @badge.reload.public.should == true
     end
     
+    it "should work with prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      @badge.public.should == nil
+      post "/_test/badges/#{@badge.nonce}", {'public' => 'true'}, 'rack.session' => {'user_id' => @user.user_id}
+      last_response.should be_ok
+      json = JSON.parse(last_response.body)
+      json['id'].should == @badge.id
+      json['public'].should == true
+      @badge.reload.public.should == true
+    end
+    
     it "should allow setting your badge to private" do
+      example_org
       award_badge(badge_config, user)
       @badge.public.should == nil
       post "/badges/#{@badge.nonce}", {'public' => 'true'}, 'rack.session' => {'user_id' => @user.user_id}
@@ -171,6 +243,7 @@ describe 'Badge Configuration' do
     end
     
     it "should allow setting the evidence URL for your badge" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = 'pending'
       @badge.save
@@ -188,6 +261,7 @@ describe 'Badge Configuration' do
     end
     
     it "should not impact public/private when setting the evidence URL" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = 'pending'
       @badge.public = true
@@ -207,6 +281,7 @@ describe 'Badge Configuration' do
     end
     
     it "should not allow setting the evidence URL for an already-awarded badge" do
+      example_org
       award_badge(badge_config, user)
       @badge.state.should == 'awarded'
       @badge.evidence_url.should == nil
@@ -221,6 +296,7 @@ describe 'Badge Configuration' do
   
   describe "manually awarding badges" do
     it "should require instructor/admin authorization" do
+      example_org
       badge_config
       user
       post "/badges/award/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {}
@@ -229,6 +305,7 @@ describe 'Badge Configuration' do
     end
     
     it "should do nothing for an invalid course or user" do
+      example_org
       badge_config
       post "/badges/award/#{@badge_placement_config.id}/asdfjkl", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit'}
       last_response.should_not be_ok
@@ -253,6 +330,7 @@ describe 'Badge Configuration' do
     end
     
     it "should fail on manual awarding if no email provided by api" do
+      example_org
       user
       configured_badge
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob'}])
@@ -262,15 +340,30 @@ describe 'Badge Configuration' do
     end
     
     it "should allow manual awarding" do
+      example_org
       user
       configured_badge
       Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
       post "/badges/award/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_redirect
       last_response.location.should == "http://example.org/badges/check/#{@badge_placement_config.id}/#{@user.user_id}"
+      b = Badge.last
+      b.should_not == nil
+      b.user_id.should == @user.user_id
+    end
+    
+    it "should work with prefixed orgs" do
+      prefix_org
+      user
+      configured_badge
+      Canvabadges.any_instance.should_receive(:api_call).and_return([{'id' => @user.user_id.to_i, 'name' => 'bob', 'email' => 'bob@example.com'}])
+      post "/_test/badges/award/#{@badge_placement_config.id}/#{@user.user_id}", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should be_redirect
+      last_response.location.should == "http://example.org/_test/badges/check/#{@badge_placement_config.id}/#{@user.user_id}"
     end
     
     it "should allow instructors to manually award the badge for their students" do
+      example_org
       badge_config
       user
       @badge_placement_config.settings['min_percent'] = 10

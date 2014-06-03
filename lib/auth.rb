@@ -1,4 +1,5 @@
 require 'sinatra/base'
+require 'typhoeus'
 
 module Sinatra
   module Auth
@@ -22,6 +23,7 @@ module Sinatra
         if host && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
           host = params['launch_presentation_return_url'].split(/\//)[2]
         end
+        
         host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
         domain = Domain.first_or_new(:host => host)
         domain.name = params['tool_consumer_instance_name']
@@ -33,7 +35,7 @@ module Sinatra
         if !params['lis_person_contact_email_primary']
           halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. Email address is required on user launches.")
         end
-        if provider.valid_request?(request)
+        if provider.valid_request?(Sinatra::Request.new(request.env['badges.original_env']))
           badgeless_placement = params['custom_show_all'] || params['custom_show_course'] || params['ext_content_intended_use'] == 'navigation' || params['picker']
           unless badgeless_placement
             if !params['custom_canvas_course_id']
@@ -114,25 +116,21 @@ module Sinatra
       end
   
       app.get "/oauth_success" do
+        get_org
         if !session['domain_id'] || !session['user_id'] || !session['source_id']
           halt 400, erb(:session_lost)
         end
         domain = Domain.first(:id => session['domain_id'])
-        return_url = "#{protocol}://#{request.host_with_port}/oauth_success"
+        return_url = "#{protocol}://#{request.env['badges.original_domain']}/oauth_success"
         code = params['code']
         url = "#{protocol}://#{domain.host}/login/oauth2/token"
-        uri = URI.parse(url)
-        
-        http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = protocol == "https"
-        request = Net::HTTP::Post.new(uri.request_uri)
-        request.set_form_data({
+        secure_connection = !@org.settings['insecure']
+        response = Typhoeus.post(url, body: {
           :client_id => oauth_config.value,
           :code => code,
           :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
-        })
-        response = http.request(request)
+        }, ssl_verifypeer: secure_connection)
         json = JSON.parse(response.body)
         
         if json && json['access_token']
@@ -142,6 +140,8 @@ module Sinatra
           user_config.name = session['name']
           user_config.image = session['user_image']
           user_config.global_user_id = session['source_id'] + "_" + json['user']['id'].to_s
+          user_config.email = session['email']
+          
           user_config.save
           params_stash = session['params_stash']
           launch_badge_placement_config_id = session['launch_badge_placement_config_id']
@@ -164,7 +164,8 @@ module Sinatra
       end
       
       app.get "/login" do
-        request_token = consumer.get_request_token(:oauth_callback => "#{request.scheme}://#{request.host_with_port}/login_success")
+        get_org
+        request_token = consumer.get_request_token(:oauth_callback => "#{request.scheme}://#{request.env['badges.domain']}/login_success")
         if request_token.token && request_token.secret
           session[:oauth_token] = request_token.token
           session[:oauth_token_secret] = request_token.secret
@@ -175,6 +176,7 @@ module Sinatra
       end
       
       app.get "/login_success" do
+        get_org
         verifier = params[:oauth_verifier]
         if params[:oauth_token] != session[:oauth_token]
           return "Authorization failed"
@@ -191,12 +193,14 @@ module Sinatra
         end
         
         
-        @org = Organization.first(:host => request.env['HTTP_HOST'], :order => :id)
+        @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
+        @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         @conf = ExternalConfig.generate(screen_name)
         erb :config_tokens
       end
       
       app.get "/session_fix" do
+        get_org
         session['has_session'] = true
         erb :session_fixed
       end
@@ -219,17 +223,17 @@ module Sinatra
       def launch_redirect(config_id, domain_id, user_id, params)
         params ||= {}
         if params['custom_show_all']
-          redirect to("/badges/all/#{domain_id}/#{user_id}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/all/#{domain_id}/#{user_id}")
         elsif params['custom_show_course']
-          redirect to("/badges/course/#{params['custom_canvas_course_id']}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/course/#{params['custom_canvas_course_id']}")
         elsif params['ext_content_intended_use'] == 'navigation' || params['picker']
           return_url = params['ext_content_return_url'] || params['launch_presentation_return_url'] || ""
-          redirect to("/badges/pick?return_url=#{CGI.escape(return_url)}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/pick?return_url=#{CGI.escape(return_url)}")
         else
           if !config_id
             halt 400, erb(:session_lost)
           end
-          redirect to("/badges/check/#{config_id}/#{user_id}")
+          redirect to("#{request.env['badges.path_prefix']}/badges/check/#{config_id}/#{user_id}")
         end
       end
       

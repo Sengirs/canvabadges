@@ -37,6 +37,17 @@ describe 'Badges API' do
       last_response.should be_ok
       last_response.body.should == {:objects => [badge_json(@badge, @user)]}.to_json
     end
+    
+    it "should support prefixed organizations" do
+      prefix_org
+      award_badge(badge_config, user)
+      @badge.public = true
+      @badge.save!
+      get "/_test/api/v1/badges/public/#{@user.user_id}/bob.com.json"
+      last_response.should be_ok
+      last_response.body.should == {:objects => [badge_json(@badge, @user)]}.to_json
+    end
+    
     it "should only return badges that are public for the user" do
       example_org
       award_badge(badge_config, user)
@@ -68,6 +79,7 @@ describe 'Badges API' do
   
   describe "awarded badges for course" do
     it "should require instructor/admin authorization" do
+      example_org
       badge_config
       get "/api/v1/badges/awarded/#{@badge_config.id}.json"
       last_response.should_not be_ok
@@ -75,6 +87,7 @@ describe 'Badges API' do
     end
     
     it "should return nothing if no course" do
+      example_org
       user
       get "/api/v1/badges/awarded/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
@@ -82,12 +95,23 @@ describe 'Badges API' do
     end
     
     it "should return awarded badges if there are any" do
+      example_org
       award_badge(badge_config, user)
       get "/api/v1/badges/awarded/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => nil}, :objects => [badge_json(@badge, @user)]}.to_json      
     end
+    
+    it "should support prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      get "/_test/api/v1/badges/awarded/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should == {:meta => {:next => nil}, :objects => [badge_json(@badge, @user)]}.to_json      
+    end
+    
     it "should not return pending or revoked badges" do
+      example_org
       award_badge(badge_config, user)
       @badge.state = 'revoked'
       @badge.save!
@@ -96,6 +120,7 @@ describe 'Badges API' do
       last_response.body.should == {:meta => {:next => nil}, :objects => []}.to_json      
     end
     it "should return paginated results" do
+      example_org
       CanvasAPI.should_not_receive(:api_call)
       award_badge(badge_config, user)
       @admin = @user
@@ -118,6 +143,7 @@ describe 'Badges API' do
   
   describe "active students for course" do
     it "should require instructor/admin authorization" do
+      example_org
       badge_config
       get "/api/v1/badges/current/#{@badge_placement_config.id}.json"
       last_response.should_not be_ok
@@ -125,6 +151,7 @@ describe 'Badges API' do
     end
     
     it "should return nothing if no course" do
+      example_org
       user
       get "/api/v1/badges/current/123.json", {}, 'rack.session' => {"permission_for_123" => 'edit', 'user_id' => @user.user_id}
       last_response.should_not be_ok
@@ -132,6 +159,7 @@ describe 'Badges API' do
     end
     
     it "should return active students if there are any" do
+      example_org
       badge_config
       user
       s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
@@ -145,6 +173,7 @@ describe 'Badges API' do
     end
     
     it "should return paginated results" do
+      example_org
       badge_config
       user
       s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
@@ -156,6 +185,21 @@ describe 'Badges API' do
       get "/api/v1/badges/current/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
       last_response.should be_ok
       last_response.body.should == {:meta => {:next => "/api/v1/badges/current/#{@badge_placement_config.id}.json?page=2"}, :objects => [s1, s2]}.to_json      
+    end
+    
+    it "should support prefixed orgs" do
+      prefix_org
+      badge_config
+      user
+      s1 = fake_badge_json(@badge_placement_config, '123', 'bob')
+      s2 = fake_badge_json(@badge_placement_config, '456', 'fred')
+      json = [{'id' => s1[:id], 'name' => s1[:name]}, {'id' => s2[:id], 'name' => s2[:name]}]
+      json.stub(:more?).and_return(true)
+      
+      Canvabadges.any_instance.should_receive(:api_call).and_return(json)
+      get "/_test/api/v1/badges/current/#{@badge_placement_config.id}.json", {}, 'rack.session' => {"permission_for_#{@badge_placement_config.course_id}" => 'edit', 'user_id' => @user.user_id}
+      last_response.should be_ok
+      last_response.body.should == {:meta => {:next => "/_test/api/v1/badges/current/#{@badge_placement_config.id}.json?page=2"}, :objects => [s1, s2]}.to_json      
     end
   end
   
@@ -199,6 +243,96 @@ describe 'Badges API' do
       }
       json['issuedOn'].should_not be_nil
       json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
+    it "should use legacy domains when migrating a domain" do
+      example_org
+      @org.old_host = @org.host
+      @org.host = "new." + @org.host
+      @org.save
+      new_domain = @org.host
+      old_domain = @org.old_host
+
+      award_badge(badge_config(@org), user)
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => old_domain
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("example.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://example.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => new_domain
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("new.example.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://new.example.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://new.example.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
+    it "should really be ok with domain migrations" do
+      example_org
+      @org.host = "www.canvabadges.org"
+      @org.save
+
+      award_badge(badge_config(@org), user)
+      @org.host = "www.canvabadges.org"
+      @org.old_host = "canvabadges.herokuapp.com"
+      @org.save
+
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => @org.old_host
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("canvabadges.herokuapp.com").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://canvabadges.herokuapp.com/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://canvabadges.herokuapp.com/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+
+      get "/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json", {}, 'HTTP_HOST' => @org.host
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("www.canvabadges.org").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://www.canvabadges.org/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://www.canvabadges.org/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
+    end
+    
+    it "should support prefixed orgs" do
+      prefix_org
+      award_badge(badge_config, user)
+      get "/_test/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      last_response.should be_ok 
+      last_response.body.should == @badge.open_badge_json("example.org/_test").to_json
+      json = JSON.parse(last_response.body)
+      json['recipient'].should_not be_nil
+      json['recipient']['salt'].should_not be_nil
+      json['verify'].should == {
+        "type"=>"hosted", 
+        "url"=>"https://example.org/_test/api/v1/badges/data/#{@badge_config.id}/#{@user.user_id}/#{@badge.nonce}.json"
+      }
+      json['issuedOn'].should_not be_nil
+      json['badge'].should == "https://example.org/_test/api/v1/badges/summary/#{@badge_config.id}/#{@badge_config.nonce}.json"
     end
     
     it "should return valid OBI BadgeClass data" do
