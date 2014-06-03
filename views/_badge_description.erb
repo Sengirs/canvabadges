@@ -20,22 +20,22 @@
 <% end %>
 
 <% if settings['badge_requirements'] && settings['badge_requirements'] != '' %>
-  <h3>Requirements to earn this badge :</h3>
+  <h3>Pre-requis pour obtenir ce badge :</h3>
   <p class='desc'>
     <%= settings['badge_requirements'] %>
   </p>
 <% end %>
 <% if settings['hours'] %>
-  <h3>Estimated workload (hours) : <%= settings['hours'] %></h3>
+  <h3>Charge de travail estimee (heures) : <%= settings['hours'] %></h3>
 <% end %>
 <% org = @badge_config.organization %>
 <% settings = (org && org.settings) || BadgeHelper.issuer %>
 <p class="verification">
   <img src='<%= settings['image'] %>'/>
-  This badge <%= @current_badge && @current_badge.awarded? ? "has been" : "is" %> awarded by 
+  Ce badge <%= @current_badge && @current_badge.awarded? ? "a ete" : "est" %> attribue par 
   <%= settings['name'] %></a>. 
 <% if false %>
-It is hosted at
+Il est heberge par
  <%= (org && org.host) || request.host %>.
 <% end %>
   <span style="clear: left;"></span>
