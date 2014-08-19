@@ -9,7 +9,7 @@ module Sinatra
       app.get "/badges/pick" do
         org_check
         load_user_config
-        halt 404, error("No user information found") unless @user_config
+        halt 404, error(I18n.t("error.no_information")) unless @user_config
         @badge_configs = BadgeConfigOwner.all(:user_config_id => @user_config.id, :order => :id.desc).map(&:badge_config).uniq
         erb :badge_chooser        
       end
