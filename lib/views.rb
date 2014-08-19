@@ -208,7 +208,7 @@ module Sinatra
       def org_check
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
-        halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}") unless @org
+        halt 404, error(I18n.t("error.no_domain") + " #{request.env['badges.domain']}") unless @org
         CanvasAPI.set_org(@org)
       end
       

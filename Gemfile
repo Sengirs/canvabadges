@@ -1,4 +1,4 @@
-ruby '2.1.1'
+#ruby '2.1.1'
 source "http://rubygems.org"
 
 gem "sinatra"
@@ -16,6 +16,7 @@ gem 'dm-types'
 gem 'rack-ssl-enforcer'
 gem 'rack-iframe'
 gem 'typhoeus'
+gem 'i18n'
 
 group :development do
     gem 'dm-sqlite-adapter'

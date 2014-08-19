@@ -9,6 +9,7 @@ require 'ims/lti'
 require 'digest/md5'
 require 'net/http'
 require 'rack/iframe'
+require 'i18n'
 
 require './lib/models.rb'
 require './lib/auth.rb'
@@ -42,6 +43,12 @@ class Canvabadges < Sinatra::Base
   configure :production do
     require 'rack-ssl-enforcer'
     use Rack::SslEnforcer
+  end
+  
+  configure do
+    I18n.load_path += Dir[File.join(settings.root, 'locales', '*.yml').to_s]
+    I18n.default_locale = :en
+    I18n.locale = :en
   end
 end
 
