@@ -26,7 +26,7 @@ module Sinatra
         
         host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
         domain = Domain.first_or_new(:host => host)
-        domain.name = params['tool_consumer_instance_name']
+        domain.name = (params['tool_consumer_instance_name'] || "")[0, 30]
         domain.save
         provider = IMS::LTI::ToolProvider.new(key, secret, params)
         if !params['custom_canvas_user_id']
@@ -131,7 +131,11 @@ module Sinatra
           :client_secret => oauth_config.shared_secret,
           :redirect_uri => CGI.escape(return_url)
         }, ssl_verifypeer: secure_connection)
-        json = JSON.parse(response.body)
+        
+        if response.code == 0
+          return error("Error authenticating user, please contact the system admin")
+        end
+        json = JSON.parse(response.body) rescue nil
         
         if json && json['access_token']
           user_config = UserConfig.first(:user_id => session['user_id'], :domain_id => domain.id)
