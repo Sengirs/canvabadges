@@ -4,7 +4,7 @@ module CanvasAPI
   def self.set_org(org)
     @insecure = !!org.settings['insecure']
   end
-  
+
   def self.api_call(path, user_config, all_pages=false)
     protocol = 'https'
     host = "#{protocol}://#{user_config.host}"
@@ -24,15 +24,19 @@ module CanvasAPI
 end
 
 module OAuthConfig
-  def self.oauth_config(org, domain)
+  def self.oauth_config(org, domain, canvas_domain = nil)
     if org && org.settings['oss_oauth']
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => domain)
+      # To allow connection from different domains to the same badge application:
+      if canvas_domain
+        oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => canvas_domain)
+      end
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => nil)
     else
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth', :domain => domain)
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth', :domain => nil)
     end
-    
+
     raise "Missing oauth config" unless oauth_config
     oauth_config
   end
@@ -42,7 +46,7 @@ module Stats
   def self.general(org)
     OrgStats.check(org)
   end
-  
+
   def self.badge_earnings(bc)
     weeks = Badge.all(:badge_config_id => bc.id, :state => 'awarded').group_by{|b| (b.issued.year * 100) + b.issued.cweek }.map{|wk, badges| [wk, badges.length] }
     hash = {}
@@ -54,7 +58,7 @@ module Stats
     end
     hash
   end
-  
+
 end
 
 require 'dm-migrations/migration_runner'

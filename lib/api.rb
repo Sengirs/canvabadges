@@ -4,7 +4,7 @@ module Sinatra
   module Api
     def self.registered(app)
       app.helpers Api::Helpers
-      
+
       # open badge organizations permalink
       # OBI-Compliant Result Required
       app.get "/api/v1/organizations/:id.json" do
@@ -17,7 +17,7 @@ module Sinatra
         halt 404, api_response({:error => "not found"}) unless config && config.settings
         api_response(config.as_json)
       end
-      
+
       # open badge details permalink
       # OBI-Compliant Result Required
       app.get "/api/v1/badges/summary/:id/:nonce.json" do
@@ -27,7 +27,7 @@ module Sinatra
         halt 404, api_response({:error => "not found"}) unless bc
         api_response(bc.as_json(@org.host))
       end
-      
+
       # open badge organizations revocations permalink
       # OBI-Compliant Result Required
       app.get "/api/v1/organizations/:id/revocations.json" do
@@ -72,7 +72,7 @@ module Sinatra
         }
         api_response(result)
       end
-      
+
       # list of students who have been awarded this badge, whether or not
       # they are currently active in the course
       # requires admin permissions
@@ -80,7 +80,7 @@ module Sinatra
         get_org
         api_response(badge_list(true, params, session))
       end
-      
+
       # list of students currently active in the course, showing whether
       # or not they have been awarded the badge
       # requires admin permissions
@@ -88,7 +88,7 @@ module Sinatra
         get_org
         api_response(badge_list(false, params, session))
       end
-      
+
       app.get "/badges/from_:type/:id/:nonce/badge.png" do
         get_org
         url = nil
@@ -108,7 +108,7 @@ module Sinatra
         end
       end
     end
-    
+
     module Helpers
       def get_org
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
@@ -116,15 +116,15 @@ module Sinatra
         halt(400, {:error => "Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}"}.to_json) unless @org
         CanvasAPI.set_org(@org)
       end
-      
+
       def api_response(hash)
-        if params['callback'] 
+        if params['callback']
           "#{params['callback']}(#{hash.to_json});"
         else
           hash.to_json
         end
-      end 
-          
+      end
+
       def badge_data(params, host_with_port)
         bc = BadgeConfig.first(:id => params[:badge_config_id])
         badge = Badge.first(:state => 'awarded', :badge_config_id => params[:badge_config_id], :user_id => params[:user_id], :nonce => params[:code])
@@ -137,7 +137,7 @@ module Sinatra
           halt 404, api_response({:error => "Not found"})
         end
       end
-      
+
       def badge_list(awarded, params, session)
         @api_request = true
         load_badge_config(params['badge_placement_config_id'], 'edit')
@@ -227,7 +227,7 @@ module Sinatra
       def protocol
         ENV['RACK_ENV'].to_s == "development" ? "http" : "https"
       end
-      
+
       def api_call(path, user_config, all_pages=false)
         res = CanvasAPI.api_call(path, user_config, all_pages)
         if res == false
@@ -236,14 +236,15 @@ module Sinatra
           res
         end
       end
-      
+
       def oauth_config
         get_org
         domain = request.env['badges.original_domain'].split(/\//)[0]
-        @oauth_config = OAuthConfig.oauth_config(@org, domain)
+        canvas_domain = Domain.first(:id => session['domain_id']).host
+        @oauth_config = OAuthConfig.oauth_config(@org, domain, canvas_domain)
       end
     end
   end
-  
+
   register Api
 end

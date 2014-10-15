@@ -1,11 +1,6 @@
 ---
-#name: Canvabadges
-#url: https://canvabadges.herokuapp.com
-#org: Instructure, Inc.
-#email: support@instructure.com
-#owner_url: https://twitter.com/whitmer
 name: Unow
 url: https://badge.unow.fr
-org: Unow 
+org: Unow
 email: contact@unow-mooc.org
 owner_url: https://twitter.com/Yannick_Petit
