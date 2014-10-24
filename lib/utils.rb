@@ -29,7 +29,7 @@ module OAuthConfig
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => domain)
       # To allow connection from different domains to the same badge application:
       if canvas_domain
-        oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => canvas_domain)
+        oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => canvas_domain.host)
       end
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => nil)
     else
