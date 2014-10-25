@@ -1,5 +1,7 @@
 en:
   errors:
+    badge_config: Error retrieving badge status
+    not_a_student: "You are not a student in this course, so you can't earn this badge"
     organization_not_found: Domain not properly configured. No Organization record matching the host %{domain}
   default_settings:
     badge_name: "Unnamed Badge"
@@ -42,7 +44,7 @@ en:
       wait_for_review: All you need now is to wait for your instructor to review your evidence URL and the approve the badge.
       not_earned_yet: "You haven't earned this badge yet"
       how_to_earn_badge: "To earn this badge you need to earn %{required_credit}% credits. Credits are available for the following activities:"
-      score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%): %{credits_final_score}% credits"      
+      score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%): %{credits_final_score}% credits"
       complete_module: "Complete the module %{name}%"
       complete: 'completed'
       not_ completed: 'not completed'
@@ -53,7 +55,7 @@ en:
       final_score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%%)"
       result: "To earn this badge you need %{min_percent}%%, but you only have %{computed_final_score }%% in this course right now."
       see_all_badges: "See All Your Badges"
-    evidence_url: 
+    evidence_url:
       achieve_this: "To earn this badge you need to achieve the following:"
       label: "Evidence URL:"
       url_required: "URL showing what qualifies you to earn this badge (required)"
@@ -74,7 +76,7 @@ en:
       select_embed: "Select a Badge to Embed"
       select_new: "Or create a new one."
       unnamed_badge: "Unnamed Badge"
-      appr_hours: "Approx hours:" 
+      appr_hours: "Approx hours:"
       badge_list: "Badge List"
       badge_list_desc: "Insert a link to the listing of all badges for the current course."
       create_new_badge: "Create a New Badge"
@@ -95,7 +97,7 @@ en:
       all_course_badges: "All Course Badges"
       no_badges_configured: "No Badges Configured"
       unnamed_badge: "Unnamed Badge"
-      appr_hours: "Approx hours:" 
+      appr_hours: "Approx hours:"
       award_badge_link: "award a badge from another course"
       award_other_badges: "Award Other Badges"
     error: ""
@@ -120,7 +122,7 @@ en:
     public_badges:
       recent_awarded_badges: "Recently-Awarded Public Badges"
       nothing_to_show: Nothing to Show
-      appr_hours: "Approx hours:" 
+      appr_hours: "Approx hours:"
       issued: "Issued"
       by: by
       hosted_at: "Hosted at"
@@ -146,12 +148,12 @@ en:
       contact_us: "Contact us"
       contact_us_text: "to add your own badging site"
     user_badges:
-      your_badges_at: Your Badges at 
-      badges_for: Badges for 
+      your_badges_at: Your Badges at
+      badges_for: Badges for
       user: Utilisateur
       at: at
       no_data: No Data available
       no_badges: No Badges Earned or Shared
       show_profile: "show on my Canvas profile"
       share_this: "Share this Page:"
-      
+
