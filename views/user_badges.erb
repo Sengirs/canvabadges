@@ -1,13 +1,13 @@
 <% if @for_current_user && @domain %>
-  <h2>Your Badges at <%= @domain.name %></h2>
+  <h2><%= I18n.t('views.user_badges.your_badges_at')%> <%= @domain.name %></h2>
 <% elsif @user && @domain %>
-  <h2>Badges for <%= @user.name || 'User' %> at <%= @domain.name %></h2>
+  <h2><%= I18n.t('views.user_badges.badges_for')%> <%= @user.name || I18n.t('views.user_badges.user') %> <%= I18n.t('views.user_badges.at')%> <%= @domain.name %></h2>
 <% end %>
 <% if @badges.empty? %>
   <% if @for_current_user %>
-    No Data available
+    <%= I18n.t('views.user_badges.no_data')%>
   <% else %>
-    <p>No Badges Earned or Shared</p>
+    <p><%= I18n.t('views.user_badges.no_badges')%></p>
   <% end %>
 <% end %>
 <table>
@@ -18,7 +18,7 @@
     <td style='padding: 0 5px;'><%= badge.name %>
       <% if @for_current_user %>
         <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<%= badge.nonce %>' style='margin: 0 0 0 15px;'>
-        <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> show on my Canvas profile</label>
+        <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> <%= I18n.t('views.user_badges.show_profile')%></label>
         </form>
       <% end %>
     </td>
@@ -27,5 +27,5 @@
 </table>
 <% if @for_current_user && !@badges.empty? %>
   <% url = "#{protocol}://#{request.env['badges.domain']}/badges/all/#{params['domain_id']}/#{params['user_id']}" %>
-  <br/><form class='form-inline'><label>Share this Page: <input type='text' value='<%= url %>'/></label></form>
+  <br/><form class='form-inline'><label> <%= I18n.t('views.user_badges.share_this')%><input type='text' value='<%= url %>'/></label></form>
 <% end %>

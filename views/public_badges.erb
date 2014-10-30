@@ -1,7 +1,7 @@
-<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> Recently-Awarded Public Badges</h2>
+<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/></a> <%= I18n.t('views.public_badges.recent_awarded_badges')%></h2>
 <div class="row">
   <div class="span10 offset1" style="padding-top: 15px;">
-    <% if @badges.length == 0 %><h3>Nothing to Show</h3><% end %>
+    <% if @badges.length == 0 %><h3><%= I18n.t('views.public_badges.nothing_to_show')%></h3><% end %>
     <% @badges.each do |badge| %>
       <% bc = badge.badge_config %>
       <% bpc = badge.badge_placement_config %>
@@ -22,16 +22,16 @@
           <p class='desc'><%= badge.description %></p>
 
           <% if bpc.settings['hours'] %>
-            <p>Approx hours: <%= bpc.settings['hours'] %></p>
+            <p><%= I18n.t('views.public_badges.appr_hours')%><%= bpc.settings['hours'] %></p>
           <% end %>
           <% org = bc.organization %>
           <% settings = (org && org.settings) || BadgeHelper.issuer %>
           <p class="extra">
             <img src='<%= settings['image'] %>'/>
-            Issued 
+            <%= I18n.t('views.public_badges.issued')%> 
             <%= badge.issued && badge.issued.strftime("%Y-%m-%d") %>
-            by <a href="<%= settings['url'] %>">
-            <%= settings['name'] %></a>. Hosted at 
+            <%= I18n.t('views.public_badges.by')%> <a href="<%= settings['url'] %>">
+            <%= settings['name'] %></a>. <%= I18n.t('views.public_badges.hosted_at')%>
             <%= (org && org.host) || request.host %>.
             <span style="clear: left;"></span>
           </p>

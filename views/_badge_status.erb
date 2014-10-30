@@ -83,29 +83,26 @@
     <p><b><%= I18n.t("partials.badge_status.wait_for_approval") %></b></p>
   <% end %>
 <% else %>
-  <h3><%= I18n.t("partials.badge_status.") %>You haven't earned this badge yet</h3>
+  <h3><%= I18n.t("partials.badge_status.not_earned_yet") %></h3>
   <% if @badge_placement_config.credit_based? %>
-    <%= I18n.t("partials.badge_status.") %>
-
-    To earn this badge you need to earn <%= settings['required_credits'] %> credits. Credits are available for the following activities:
-
+    <%= I18n.t("partials.badge_status.how_to_earn_badge", :required_credit => settings['required_credits']) %>
+    
     <% completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score']) %>
     <% credits = completed_score ? settings['credits_for_final_score'] : 0 %>
 
     <ul class="badge_earn_list">
       <li>
         <img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/>
-        <%= I18n.t("partials.badge_status.") %>
-        Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%): <%= settings['credits_for_final_score'] %> credits
-      </li>
+        <%= I18n.t("partials.badge_status.score", :min_percent => settings['min_percent'], :computed_final_score => @student['computed_final_score'].to_f, :credits_final_score => settings['credits_for_final_score']) %>
+        </li>
 
       <% @badge_placement_config.required_modules.each do |id, name, credit| %>
         <% complete = @completed_module_ids.include?(id.to_i) %>
         <% credits += credit if complete %>
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.") %>
-          Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>): <%= credit %> credits
+          <%= I18n.t("partials.badge_status.complete_module", :name => name) %> 
+          (<%= complete ? I18n.t("partials.badge_status.complete") : I18n.t("partials.badge_status.not_completed") %>): <%= credit %> <%= I18n.t("partials.badge_status.credits") %>
         </li>
       <% end %>
 
@@ -114,15 +111,14 @@
         <% credits += credit if complete %>
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.") %>
-          Master the outcome <%= name %> (<%= complete ? 'mastered' : 'not mastered' %>): <%= credit %> credits
+          <%= I18n.t("partials.badge_status.master_this", :name => name) %>
+           (<%= complete ? I18n.t("partials.badge_status.mastered") : I18n.t("partials.badge_status.not_mastered")' %>): <%= credit %> <%= I18n.t("partials.badge_status.credits") %>
         </li>
       <% end %>
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(credits / settings['required_credits'] * 100).to_i, 5].max.to_s %>%;'></div></div>
   <% elsif @badge_placement_config.modules_or_outcomes_required? %>
-    <%= I18n.t("partials.badge_status.") %>
-    To earn this badge you need to achieve the following:
+    <%= I18n.t("partials.badge_status.achieve_this") %>
     <%
       completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score'])
       total = @badge_placement_config.required_modules.length + @badge_placement_config.required_outcomes.length + 1
@@ -136,8 +132,7 @@
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
         <li>
           <img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.") %>
-          Final score of at least <%= settings['min_percent'] %>% (currently <%= @student['computed_final_score'].to_f %>%)
+          <%= I18n.t("partials.badge_status.final_score", :min_percent => settings['min_percent']), :computed_final_score => @student['computed_final_score'].to_f %>
         </li>
       <% end %>
 
@@ -146,8 +141,8 @@
         <% achieved +=1 if complete %>
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.") %>
-          Complete the module <%= name %> (<%= complete ? 'completed' : 'not completed' %>)
+          <%= I18n.t("partials.badge_status.complete_module", :name => name) %> 
+          (<%= complete ?  I18n.t("partials.badge_status.complete") : I18n.t("partials.badge_status.not_completed") %>)
         </li>
       <% end %>
 
@@ -156,19 +151,18 @@
         <% achieved +=1 if complete %>
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.") %>
-          Master the outcome <%= name %> (<%= complete ? 'mastered' : 'not mastered' %>)</li>
+          <%= I18n.t("partials.badge_status.master_this") %>
+          (<%= complete ? I18n.t("partials.badge_status.mastered") : I18n.t("partials.badge_status.not_mastered") %>)
+          </li>
       <% end %>
     </ul>
     <div class='progress progress-danger progress-striped progress-big'><div class='bar' style='width: <%= [(100.0 * achieved.to_f / total.to_f).to_i, 5].max.to_s  %>%;'></div></div>
   <% else %>
-    <%= I18n.t("partials.badge_status.") %>
-    To earn this badge you need <%= settings['min_percent'] %>%, but you only have <%= @student['computed_final_score'].to_f %>% in this course right now.
+    <%= I18n.t("partials.badge_status.result", :min_percent => settings['min_percent'], :computed_final_score =>  @student['computed_final_score'].to_f) %>
     <div class='progress progress-danger progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
   <% end %>
   <%= erb :_evidence_url %>
   <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'>
-    <%= I18n.t("partials.badge_status.") %>
-    See All Your Badges
+    <%= I18n.t("partials.badge_status.see_all_badges") %>
   </a>
 <% end %>
