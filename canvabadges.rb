@@ -1,4 +1,6 @@
 require 'sinatra/base'
+require 'i18n'
+require 'i18n/backend/fallbacks'
 require 'oauth'
 require 'json'
 require 'dm-core'
@@ -26,7 +28,7 @@ class Canvabadges < Sinatra::Base
 
   use Rack::Iframe
   use DomainFudger
-  
+
   # sinatra wants to set x-frame-options by default, disable it
   disable :protection
   # enable sessions so we can remember the launch info between http requests, as
@@ -42,17 +44,25 @@ class Canvabadges < Sinatra::Base
     config.each do |key, value|
       ENV[key] = value
     end
-    raise "Please change configuration.yml" if ENV['SESSION_KEY'] == "long string" 
-    raise "session key required" unless ENV["SESSION_KEY"] 
+    raise "Please change configuration.yml" if ENV['SESSION_KEY'] == "long string"
+    raise "session key required" unless ENV["SESSION_KEY"]
   end
 
   set :session_secret, ENV['SESSION_KEY'] || "local_secret"
+  set :root, File.dirname(__FILE__)
   env = ENV['RACK_ENV'] || settings.environment
   DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
   DataMapper.auto_upgrade!
+
   configure :production do
     require 'rack-ssl-enforcer'
     use Rack::SslEnforcer
+  end
+
+  configure do
+    I18n::Backend::Simple.send(:include, I18n::Backend::Fallbacks)
+    I18n.load_path = Dir[File.join(settings.root, 'locales', '*.yml')]
+    I18n.backend.load_translations
   end
 end
 

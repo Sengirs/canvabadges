@@ -1,11 +1,11 @@
 <h2 class="with_tall_image">
   <img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/>
-  Badges for this Course
+  <%= I18n.t('views.course_badges.title')%>
 </h2>  
-<h3>Earned Badges</h3>
+<h3><%= I18n.t('views.course_badges.earned_badges')%></h3>
 <div style="margin: 5px 0 20px;">
   <% if @badges.empty? %>
-    <p>No badges earned</p>
+    <p><%= I18n.t('views.course_badges.no_badges_earned')%></p>
   <% else %>
     <table>
       <% @badges.each do |badge| %>
@@ -14,32 +14,32 @@
         <td style='padding: 0 5px;'><a href='<%= badge_url %>'><img src='<%= badge.badge_url %>' class='thumbnail' alt='badge image'/></a></td>
         <td style='padding: 0 5px;'><%= badge.name %>
           <form class='form-inline' action='<%= request.env['badges.path_prefix'] %>/badges/<% badge.nonce %>' style='margin: 0 0 0 15px;'>
-          <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> show on my Canvas profile</label>
+          <label><input class='public_badge' <%= 'checked' if badge.public %> type='checkbox'/> <%= I18n.t('views.course_badges.show_profile')%></label>
           </form>
         </td>
         </tr>
       <% end %>
     </table>
   <% end %>
-  <a href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= session['domain_id'] %>/<%= session['user_id'] %>'>See All Your Badges</a>
+  <a href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= session['domain_id'] %>/<%= session['user_id'] %>'><%= I18n.t('views.course_badges.see_all_badges')%></a>
 </div>
 
-<h3>All Course Badges</h3>
+<h3><%= I18n.t('views.course_badges.all_course_badges')%></h3>
 <div style="margin: 5px 0 20px;">
   <% if @badge_placements.empty? %>
-    <p>No Badges Configured</p>
+    <p><%= I18n.t('views.course_badges.no_badges_configured')%></p>
   <% else %>
     <% @badge_placements.each do |bp| %>
       <div class="badge_config">
         <% settings = bp.merged_settings || {} %>
         <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
         <h2>
-          <a href="<%= request.env['badges.path_prefix'] %>/badges/check/<%= bp.id %>/<%= session['user_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+          <a href="<%= request.env['badges.path_prefix'] %>/badges/check/<%= bp.id %>/<%= session['user_id'] %>"><%= settings['badge_name'] || I18n.t('views.course_badges.unnamed_badge') %></a></h2>
         </h2>
         <p class='desc'><%= settings['badge_description'] %></p>
 
         <% if settings['hours'] %>
-          <p>Approx hours: <%= settings['hours'] %></p>
+          <p><%= I18n.t('views.course_badges.appr_hours')%> <%= settings['hours'] %></p>
         <% end %>
 
         <div style='clear: left;'></div>
@@ -49,21 +49,21 @@
 </div>
 
 <% if @other_badge_placements.length > 0 %>
-  <a href="#" id="show_other_badges">award a badge from another course</a>
+  <a href="#" id="show_other_badges"><%= I18n.t('views.course_badges.award_badge_link')%></a>
   <div style="display: none;" id="other_badges">
-    <h3>Award Other Badges</h3>
+    <h3><%= I18n.t('views.course_badges.award_other_badges')%></h3>
     <div style="margin: 5px 0 20px;">
       <% @other_badge_placements.each do |bp| %>
         <div class="badge_config">
           <% settings = bp.merged_settings || {} %>
           <img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/>
           <h2>
-            <a href="<%= request.env['badges.path_prefix'] %>/badges/add_to_course/<%= bp.id %>/<%= params['course_id'] %>"><%= settings['badge_name'] || "Unnamed Badge" %></a></h2>
+            <a href="<%= request.env['badges.path_prefix'] %>/badges/add_to_course/<%= bp.id %>/<%= params['course_id'] %>"><%= settings['badge_name'] || I18n.t('views.course_badges.unnamed_badge') %></a></h2>
           </h2>
           <p class='desc'><%= settings['badge_description'] %></p>
 
           <% if settings['hours'] %>
-            <p>Approx hours: <%= settings['hours'] %></p>
+            <p><%= I18n.t('views.course_badges.appr_hours')%> <%= settings['hours'] %></p>
           <% end %>
 
           <div style='clear: left;'></div>

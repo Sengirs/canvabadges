@@ -2,22 +2,22 @@
         <head>
           <meta charset="utf-8">
           <title>Canvabadges</title>
-          
+
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <meta name="description" content="">
           <meta name="author" content="">
           <meta name="robots" content="noindex">
-      
+
           <!-- Le styles -->
           <link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
           <link rel="stylesheet" href="/fancybox/source/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
           <link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-      
+
           <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
           <!--[if lt IE 9]>
             <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
           <![endif]-->
-      
+
           <!-- Le fav and touch icons -->
           <link rel="shortcut icon" href="/favicon.ico">
           <style>
@@ -141,8 +141,8 @@
             <% issuer = BadgeHelper.issuer %>
             powered by <a href="<%= issuer['url'] %>"><%= issuer['name'] %></a>
             <% if @full_footer %>
-              | <a href="<%= request.env['badges.path_prefix'] %>/about">About</a>
-              | <a href="<%= request.env['badges.path_prefix'] %>/stats">Stats</a>
+              | <a href="<%= request.env['badges.path_prefix'] %>/about"><%= I18n.t('views.layout.about')%></a>
+              | <a href="<%= request.env['badges.path_prefix'] %>/stats"><%= I18n.t('views.layout.stats')%></a>
             <% end %>
           </footer>
         </div>
@@ -156,7 +156,7 @@
 				var _gaq = _gaq || [];
 				_gaq.push(['_setAccount', '<%= @org.settings['tracking_id'] %>']);
 				_gaq.push(['_trackPageview']);
-			
+
 				(function() {
 					var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 					ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
