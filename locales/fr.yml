@@ -25,6 +25,7 @@ fr:
       mastery_required: "Compétences à démontrer pour obtenir le badge :"
     badge_settings: ""
     badge_status:
+      achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
       all_badges: "Voir tous mes badges"
       and_have: "et vous avez "
       backpack_alt: "Ajouter ce badge à mon Backpack Mozilla"
@@ -58,7 +59,6 @@ fr:
       result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%, mais vous n'avez pour l'instant que %{computed_final_score }% dans ce cours."
       see_all_badges: "Voir tous mes badges"
     evidence_url:
-      achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
       label: "URL de preuve"
       url_required: "URL prouvant que vous méritez bien d'obtenir le badge (obligatoire)"
       url_optional: "URL prouvant que vous avez réalisé l'activité demandée (optionnel)"
