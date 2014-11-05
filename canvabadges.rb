@@ -39,7 +39,6 @@ class Canvabadges < Sinatra::Base
   set :root, File.dirname(__FILE__)
 
   env = ENV['RACK_ENV'] || settings.environment
-  puts env
   DataMapper.setup(:default, (ENV["DATABASE_URL"] || "sqlite3:///#{Dir.pwd}/#{env}.sqlite3"))
   DataMapper.auto_upgrade!
 

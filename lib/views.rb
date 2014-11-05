@@ -156,7 +156,7 @@ module Sinatra
               erb :manage_badge
             end
           else
-            return message("Your teacher hasn't set up this badge yet")
+            return message(I18n.t("errors.badge_not_set"))
           end
         end
       end
@@ -194,10 +194,16 @@ module Sinatra
               puts e.backtrace
               return "<h3>#{e.message}</h3>"
             end
-            @student = args[:student]
-            @completed_module_ids = args[:completed_module_ids]
-            @completed_outcome_ids = args[:completed_outcome_ids]
-            @badge = args[:badge]
+
+            # If args is a string then, there was an error during badge status check
+            if args.class == String
+              return message(args)
+            else
+              @student = args[:student]
+              @completed_module_ids = args[:completed_module_ids]
+              @completed_outcome_ids = args[:completed_outcome_ids]
+              @badge = args[:badge]
+            end
           end
           if @student
             erb :_badge_status, :layout => false

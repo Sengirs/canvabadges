@@ -4,9 +4,10 @@ module CanvasAPI
   def self.set_org(org)
     @insecure = !!org.settings['insecure']
   end
-  
+
   def self.api_call(path, user_config, all_pages=false)
-    protocol = 'https'
+    # Careful with protocol and development environment
+    protocol = user_config.host.include?("localhost") ? 'http' : 'https'
     host = "#{protocol}://#{user_config.host}"
     canvas = Canvas::API.new(:host => host, :token => user_config.access_token, :insecure => @insecure)
     begin
@@ -32,7 +33,7 @@ module OAuthConfig
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth', :domain => domain)
       oauth_config ||= ExternalConfig.first(:config_type => 'canvas_oauth', :domain => nil)
     end
-    
+
     raise "Missing oauth config" unless oauth_config
     oauth_config
   end
@@ -42,7 +43,7 @@ module Stats
   def self.general(org)
     OrgStats.check(org)
   end
-  
+
   def self.badge_earnings(bc)
     weeks = Badge.all(:badge_config_id => bc.id, :state => 'awarded').group_by{|b| (b.issued.year * 100) + b.issued.cweek }.map{|wk, badges| [wk, badges.length] }
     hash = {}
@@ -54,7 +55,7 @@ module Stats
     end
     hash
   end
-  
+
 end
 
 require 'dm-migrations/migration_runner'

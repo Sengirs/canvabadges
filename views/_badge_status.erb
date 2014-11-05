@@ -17,7 +17,7 @@
 
       <%= I18n.t("partials.badge_status.you_have") %>
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>
+        <%= I18n.t("partials.badge_status.current_score", :current_score => @student['computed_final_score'].to_f) %>
         <%= I18n.t("partials.badge_status.and_have") %>
       <% end %>
       <%= I18n.t("partials.badge_status.completed") %>
@@ -26,7 +26,7 @@
       <%= I18n.t("partials.badge_status.you_needed") %>
       <%= I18n.t("partials.badge_status.needed_score", :final_score => settings['min_percent'] ) %>
       <%= I18n.t("partials.badge_status.and_have") %>
-      <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>.
+      <%= I18n.t("partials.badge_status.current_score", :current_score => @student['computed_final_score'].to_f) %>.
     <% end %>
     <div class='progress progress-success progress-striped progress-big'><div class='bar' style='width: 100%;'></div></div>
   <% end %>
@@ -63,7 +63,7 @@
 
       <%= I18n.t("partials.badge_status.you_have") %>
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
-        <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>
+        <%= I18n.t("partials.badge_status.current_score", :current_score => @student['computed_final_score'].to_f) %>
         <%= I18n.t("partials.badge_status.and_have") %>
       <% end %>
       <%= I18n.t("partials.badge_status.completed") %>
@@ -72,7 +72,7 @@
       <%= I18n.t("partials.badge_status.you_needed") %>
       <%= I18n.t("partials.badge_status.needed_score", :final_score => settings['min_percent'] ) %>
       <%= I18n.t("partials.badge_status.and_have") %>
-      <%= I18n.t("partials.badge_status.current_score", :score => @student['computed_final_score'].to_f %>.
+      <%= I18n.t("partials.badge_status.current_score", :current_score => @student['computed_final_score'].to_f) %>.
       <div class='progress progress-warning progress-striped progress-big'><div class='tick' style='left: <%= (3 * settings['min_percent']).to_i.to_s %>px;'></div><div class='bar' style='width: <%= @student['computed_final_score'].to_i.to_s %>%;'></div></div>
     <% end %>
   <% end %>
@@ -86,7 +86,7 @@
   <h3><%= I18n.t("partials.badge_status.not_earned_yet") %></h3>
   <% if @badge_placement_config.credit_based? %>
     <%= I18n.t("partials.badge_status.how_to_earn_badge", :required_credit => settings['required_credits']) %>
-    
+
     <% completed_score = @badge_placement_config.required_score_met?(@student['computed_final_score']) %>
     <% credits = completed_score ? settings['credits_for_final_score'] : 0 %>
 
@@ -101,7 +101,7 @@
         <% credits += credit if complete %>
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.complete_module", :name => name) %> 
+          <%= I18n.t("partials.badge_status.complete_module", :name => name) %>
           (<%= complete ? I18n.t("partials.badge_status.complete") : I18n.t("partials.badge_status.not_completed") %>): <%= credit %> <%= I18n.t("partials.badge_status.credits") %>
         </li>
       <% end %>
@@ -112,7 +112,7 @@
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
           <%= I18n.t("partials.badge_status.master_this", :name => name) %>
-           (<%= complete ? I18n.t("partials.badge_status.mastered") : I18n.t("partials.badge_status.not_mastered")' %>): <%= credit %> <%= I18n.t("partials.badge_status.credits") %>
+           (<%= complete ? I18n.t("partials.badge_status.mastered") : I18n.t("partials.badge_status.not_mastered") %>): <%= credit %> <%= I18n.t("partials.badge_status.credits") %>
         </li>
       <% end %>
     </ul>
@@ -132,7 +132,7 @@
       <% if settings['min_percent'] && settings['min_percent'] > 0 %>
         <li>
           <img src='<%= completed_score ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.final_score", :min_percent => settings['min_percent']), :computed_final_score => @student['computed_final_score'].to_f %>
+          <%= I18n.t("partials.badge_status.final_score", :min_percent => settings['min_percent'], :computed_final_score => @student['computed_final_score'].to_f) %>
         </li>
       <% end %>
 
@@ -141,7 +141,7 @@
         <% achieved +=1 if complete %>
         <li>
           <img src='<%= complete ? '/check.gif' : '/redx.png' %>'/>
-          <%= I18n.t("partials.badge_status.complete_module", :name => name) %> 
+          <%= I18n.t("partials.badge_status.complete_module", :name => name) %>
           (<%= complete ?  I18n.t("partials.badge_status.complete") : I18n.t("partials.badge_status.not_completed") %>)
         </li>
       <% end %>

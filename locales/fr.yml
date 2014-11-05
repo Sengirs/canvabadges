@@ -1,8 +1,10 @@
 fr:
   errors:
     badge_config: "Une erreur est survenue lors de la tentative d'identification su statut du badge. Merci de raffraichir cette page."
+    badge_not_set: "Votre professeur n'a pas encore terminé la configuration de ce badge."
     not_a_student: "Vous n'êtes pas étudiant(e) dans ce cours et ne pouvez donc pas obtenir ce badge."
     organization_not_found: "Ce domaine n'a pas été correctement configuré. Aucun enregistrement d'organisation ne correspond au domaine %{domain}"
+    retrieving_student_scores: "Une erreur s'est produite lors de la récupération de vos notes. Merci de contacter un administrateur si le problème persiste."
   default_settings:
     badge_name: "Badge sans nom"
   partials:
@@ -33,6 +35,7 @@ fr:
       needed_credits: "%{credits} points, ce que vous avez obtenu. "
       needed_requirements: "pour valider les modules requis et maîtriser les compétences demandées"
       needed_score: "un score final de %{final_score}%, et "
+      not_earned_yet: "Vous n'avez pas encore obtenu ce badge."
       show_badge: "Afficher ce badge sur ma page de profil"
       titles:
         almost_earned: "Vous avez presque obtenu ce badge !"
@@ -42,18 +45,17 @@ fr:
       you_needed: "Afin d'obtenir ce badge, vous devez "
       wait_for_approval: "Il ne vous manque plus que la validation du badge par votre enseignant."
       wait_for_review: "Il ne vous manque plus que la revue manuelle par votre enseignant du lien de preuve."
-      not_earned_yet: "Vous n'avez pas encore obtenu ce badge."
-      how_to_earn_badge: "Pour obtenir ce badge, vous devez récolter %{required_credit}% points. Ces points sont disponibles pour les activités suivantes :"
-      score: "Score final d'au moins %{min_percent}%% (actuellement %{computed_final_score}%): %{credits_final_score}% points"
-      complete_module: "Valiez le module %{name}%"
+      how_to_earn_badge: "Pour obtenir ce badge, vous devez récolter %{required_credit} points. Ces points sont disponibles pour les activités suivantes :"
+      score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%): %{credits_final_score} points"
+      complete_module: "Validez le module %{name}"
       complete: 'validé'
-      not_ completed: 'pas encore validé'
+      not_completed: 'pas encore validé'
       credits: credits
-      master_this: "Maîtrisez la compétence  %{name}%"
+      master_this: "Maîtrisez la compétence  %{name}"
       mastered: mastered
       not_mastered: not mastered
-      final_score: "Score final d'au moins %{min_percent}%% (actuellement %{computed_final_score}%%)"
-      result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%%, mais vous n'avez pour l'instant que %{computed_final_score }%% dans ce cours."
+      final_score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%)"
+      result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%, mais vous n'avez pour l'instant que %{computed_final_score }% dans ce cours."
       see_all_badges: "Voir tous mes badges"
     evidence_url:
       achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
@@ -66,8 +68,8 @@ fr:
       go: Go
       clear: Effacer
       student: Participant
-      earned: obtenu
-      issued: decerné
+      earned: "Obtenu"
+      issued: "Décerné"
   views:
     about: ""
     badge_check:
@@ -124,14 +126,14 @@ fr:
       nothing_to_show: Nothing to Show
       appr_hours: "Durée d'implication estimée :"
       issued: "Descerné"
-      by: by
+      by: par
       hosted_at: "Hébergé sur "
     session_fixed:
       title: Session Fixer
       has_session: "Le problème a été résolu ! Merci de recharger cette page."
       no_session: "Un problème est survenu. Vos cookies sont peut-être désactivés. Merci de contacter l'équipe technique sur le forum pour recevoir de l'assistance."
     session_lost:
-      title: Session Information Lost
+      title: Informations de session perdues
       text: "There was a problem retrieving your user information. Some web browsers are starting to take measures that cause this to happen unexpectedly. You can try clicking the following button to launch a popup that should fix the problem if it's a browser issue."
       open_session: "Open Session Fixer in a New Window"
     stats:
@@ -148,11 +150,11 @@ fr:
       contact_us: "Contact us"
       contact_us_text: "to add your own badging site"
     user_badges:
-      your_badges_at: Your Badges at
-      badges_for: Badges for
+      your_badges_at: Vos badges sur
+      badges_for: Les badges pour
       user: Utilisateur
-      at: at
-      no_data: No Data available
-      no_badges: No Badges Earned or Shared
+      at: à
+      no_data: Aucune donnée disponible
+      no_badges: Aucun badge gagné ou partagé
       show_profile: "Voir sur mon profil"
       share_this: "Partager cette page :"

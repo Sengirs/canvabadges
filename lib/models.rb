@@ -145,7 +145,7 @@ class UserConfig
     end
     completed_outcome_ids = outcomes_json['linked']['outcomes'].select{|oc| (scores[oc['id'].to_i] || 0) >= oc['mastery_points'] }.map{|oc| oc['id'].to_i }.compact
     unless scores_json
-      return "<h3>Error getting data from Canvas</h3>"
+      return "<h3>#{I18n.t('errors.retrieving_student_scores')}</h3>"
     end
 
     student = scores_json['enrollments'].detect{|e|  e['role'].downcase == 'studentenrollment' }

@@ -1,8 +1,10 @@
 en:
   errors:
     badge_config: Error retrieving badge status
+    badge_not_set: "Your teacher hasn't set up this badge yet"
     not_a_student: "You are not a student in this course, so you can't earn this badge"
     organization_not_found: Domain not properly configured. No Organization record matching the host %{domain}
+    retrieving_student_scores: "There was an error while retrieving your scores. Please, contact an admin if the error persists."
   default_settings:
     badge_name: "Unnamed Badge"
   partials:
@@ -43,17 +45,17 @@ en:
       wait_for_approval: All you need now is to wait for your instructor's manual approval.
       wait_for_review: All you need now is to wait for your instructor to review your evidence URL and the approve the badge.
       not_earned_yet: "You haven't earned this badge yet"
-      how_to_earn_badge: "To earn this badge you need to earn %{required_credit}% credits. Credits are available for the following activities:"
-      score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%): %{credits_final_score}% credits"
-      complete_module: "Complete the module %{name}%"
+      how_to_earn_badge: "To earn this badge you need to earn %{required_credit} credits. Credits are available for the following activities:"
+      score: "Final score of at least %{min_percent}% (currently %{computed_final_score}%): %{credits_final_score} credits"
+      complete_module: "Complete the module %{name}"
       complete: 'completed'
-      not_ completed: 'not completed'
+      not_completed: 'not completed'
       credits: credits
       master_this: "Master the outcome  %{name}%"
       mastered: mastered
       not_mastered: not mastered
-      final_score: "Final score of at least %{min_percent}%% (currently %{computed_final_score}%%)"
-      result: "To earn this badge you need %{min_percent}%%, but you only have %{computed_final_score }%% in this course right now."
+      final_score: "Final score of at least %{min_percent}% (currently %{computed_final_score}%)"
+      result: "To earn this badge you need %{min_percent}%, but you only have %{computed_final_score}% in this course right now."
       see_all_badges: "See All Your Badges"
     evidence_url:
       achieve_this: "To earn this badge you need to achieve the following:"
