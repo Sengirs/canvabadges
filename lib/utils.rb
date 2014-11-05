@@ -6,7 +6,8 @@ module CanvasAPI
   end
 
   def self.api_call(path, user_config, all_pages=false)
-    protocol = 'https'
+    # Careful with protocol and development environment
+    protocol = user_config.host.include?("localhost") ? 'http' : 'https'
     host = "#{protocol}://#{user_config.host}"
     canvas = Canvas::API.new(:host => host, :token => user_config.access_token, :insecure => @insecure)
     begin

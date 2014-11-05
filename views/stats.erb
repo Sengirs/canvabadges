@@ -1,42 +1,42 @@
-<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt="Root"/></a> <%= @org.settings['name'] %> Badging Stats</h2>
+<h2><a href="/"><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt="Root"/></a> <%= @org.settings['name'] %> <%= I18n.t('views.stats.badging_stats')%></h2>
 <div class='row'>
   <div class='span8 offset2'>
     <table class='table table-bordered table-striped'>
       <tr>
-        <td>Authorized Badge Issuers</td>
+        <td><%= I18n.t('views.stats.authorized_badge_issuers')%></td>
         <td><%= comma @stats['issuers'] %></td>
       </tr>
       <tr>
-        <td>Badges Configured <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public<%= "?this_org_only=1" if @stats_org %>">see earnable public badges</a></td>
+        <td> <%= I18n.t('views.stats.badge_configured')%> <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public<%= "?this_org_only=1" if @stats_org %>"><%= I18n.t('views.stats.see_earnable_badges')%></a></td>
         <td><%= comma @stats['badge_configs'] %></td>
       </tr>
       <tr>
-        <td>Badge Placements</td>
+        <td><%= I18n.t('views.stats.badge_placement')%></td>
         <td><%= comma @stats['badge_placement_configs'] %></td>
       </tr>
       <tr>
-        <td>Badges Awarded <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>">see learner-shared badges</a></td>
+        <td><%= I18n.t('views.stats.badge_awarded')%> <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>"><%= I18n.t('views.stats.see_learner_badges')%></a></td>
         <td><%= comma @stats['badges'] %></td>
       </tr>
       <% unless @stats_org %>
         <tr>
-          <td>Canvas Domains</td>
+          <td><%= I18n.t('views.stats.canvas_domains')%></td>
           <td><%= comma @stats['domains'] %></td>
         </tr>
         <tr>
           <td>
-            Organizations
+            <%= I18n.t('views.stats.organizations')%>
             <ul style="padding-top: 10px;">
               <% Organization.all.each do |org| %>
                 <li>
                   <a href="<%= org.settings['url'] %>">
                     <img src="<%= org.settings['image'] || "/organizations/default.png" %>" alt="" style="height: 40px; padding-right: 10px;"/>
                     <%= org.settings['name'] %></a> 
-                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a>
+                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>"><%= I18n.t('views.stats.badge_site')%></a>
                 </li>
               <% end %>
               <li style="margin-top: 15px; font-size: 12px; list-style: none;">
-                <a href="<%= BadgeHelper.issuer['owner_url'] %>">Contact us</a> to add your own badging site
+                <a href="<%= BadgeHelper.issuer['owner_url'] %>"><%= I18n.t('views.stats.contact_us')%></a> <%= I18n.t('views.stats.contact_us_text')%>
               </li>
             </ul>
             

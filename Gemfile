@@ -2,6 +2,7 @@ ruby '2.1.3'
 source "http://rubygems.org"
 
 gem "sinatra"
+gem "i18n"
 gem "oauth"
 gem "json"
 gem "ims-lti"

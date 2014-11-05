@@ -2,7 +2,7 @@
 <%= erb :_badge_description %>
 <% unless @badge_placement_config.award_only? %>
   <div id="student_badge" rel="/badges/status/<%= @badge_placement_config_id %>/<%= params['user_id'] %>">
-    <h3>Checking badge status...</h3>
+    <h3><%= I18n.t('views.badge_check.check_status') %></h3>
   </div>
 <% end %>
 <% if session["permission_for_#{@course_id}"] == 'edit' %>
