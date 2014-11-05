@@ -20,19 +20,19 @@ fr:
     badge_modules:
       completion_required: "Modules à valider :"
     badge_outcomes:
-      mastery_required: "Outcomes requiring mastery:"
+      mastery_required: "Compétences à démontrer pour obtenir le badge :"
     badge_settings: ""
     badge_status:
-      all_badges: "See All Your Badges"
-      and_have: "and you have "
-      backpack_alt: "Add this badge to your Mozilla backpack"
+      all_badges: "Voir tous mes badges"
+      and_have: "et vous avez "
+      backpack_alt: "Ajouter ce badge à mon Backpack Mozilla"
       completed: "a validé les modules requis."
-      current_score: "%{current_score}% in this course right now "
-      earned_for: "earned for email: %{email}"
+      current_score: "%{current_score}% dans ce cours actuellement "
+      earned_for: "decerné pour l'adresse e-mail : %{email}"
       earned_somewhere_else: "Vous avez déjà obtenu ce badge à un autre endroit du cours."
-      needed_credits: "%{credits} credits, which you've now done. "
-      needed_requirements: "to complete the required modules and master the required outcomes. "
-      needed_score: "a final score of %{final_score}%, and "
+      needed_credits: "%{credits} points, ce que vous avez obtenu. "
+      needed_requirements: "pour valider les modules requis et maîtriser les compétences demandées"
+      needed_score: "un score final de %{final_score}%, et "
       show_badge: "Afficher ce badge sur ma page de profil"
       titles:
         almost_earned: "Vous avez presque obtenu ce badge !"
