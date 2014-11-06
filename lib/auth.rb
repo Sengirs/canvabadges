@@ -163,7 +163,7 @@ module Sinatra
 
           launch_redirect(launch_badge_placement_config_id, user_config.domain_id, user_config.user_id, params_stash)
         else
-          return error("Error retrieving access token")
+          return error("Error retrieving access token #{response.body}")
         end
       end
       

@@ -240,7 +240,7 @@ module Sinatra
       def oauth_config
         get_org
         domain = request.env['badges.original_domain'].split(/\//)[0]
-        canvas_domain = Domain.first(:id => session['domain_id']).host
+        canvas_domain = Domain.first(:id => session['domain_id'])
         @oauth_config = OAuthConfig.oauth_config(@org, domain, canvas_domain)
       end
     end
