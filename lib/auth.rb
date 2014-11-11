@@ -20,11 +20,14 @@ module Sinatra
         end
         secret = tool_config.shared_secret
         host = params['custom_canvas_api_domain']
-        if host && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
+        if host && params['launch_presentation_return_url'] && params['launch_presentation_return_url'].match(Regexp.new(host.sub(/\.instructure\.com/, ".(test|beta).instructure.com")))
           host = params['launch_presentation_return_url'].split(/\//)[2]
         end
         
         host ||= params['tool_consumer_instance_guid'].split(/\./)[1..-1].join(".") if params['tool_consumer_instance_guid'] && params['tool_consumer_instance_guid'].match(/\./)
+        if !host
+          halt 400, error("This app appears to have been misconfigured, please contact your instructor or administrator. App should receive custom_canvas_api_domain parameter but isn't.")
+        end
         domain = Domain.first_or_new(:host => host)
         domain.name = (params['tool_consumer_instance_name'] || "")[0, 30]
         domain.save
@@ -200,7 +203,9 @@ module Sinatra
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
         @conf = ExternalConfig.generate(screen_name)
-        erb :config_tokens
+        
+        hash = @conf.confirmation
+        redirect to("/token?id=#{@conf.id}&confirmation=#{hash}")
       end
       
       app.get "/session_fix" do
