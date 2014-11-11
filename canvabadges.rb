@@ -26,12 +26,8 @@ class Canvabadges < Sinatra::Base
   register Sinatra::Api
   register Sinatra::BadgeConfiguration
   register Sinatra::Views
-<<<<<<< HEAD
-
-=======
   register Sinatra::Token
-  
->>>>>>> canvabadges/master
+
   use Rack::Iframe
   use DomainFudger
 
