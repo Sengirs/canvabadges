@@ -36,7 +36,7 @@ en:
       needed_credits: "%{credits} credits, which you've now done. "
       needed_requirements: "to complete the required modules and master the required outcomes. "
       needed_score: "a final score of %{final_score}%, and "
-      show_badge: show this badge on my Unow profile
+      show_badge: show this badge on my Canvas profile
       titles:
         almost_earned: You've almost earned this badge!
         earned: "You've earned this badge!"
@@ -94,7 +94,7 @@ en:
       title: "Badges for this Course"
       earned_badges: "Earned Badges"
       no_badges_earned: "No badges earned"
-      show_profile: "show on my Unow profile"
+      show_profile: "show on my Canvas profile"
       see_all_badges: "See All Your Badges"
       all_course_badges: "All Course Badges"
       no_badges_configured: "No Badges Configured"
@@ -144,7 +144,7 @@ en:
       badge_placement: Badge Placements
       badge_awarded: Badges Awarded
       see_learner_badges: "see learner-shared badges"
-      canvas_domain: "Unow Domains"
+      canvas_domain: "Canvas Domains"
       organizations:  Organizations
       badge_site: "badge site"
       contact_us: "Contact us"
@@ -156,6 +156,6 @@ en:
       at: at
       no_data: No Data available
       no_badges: No Badges Earned or Shared
-      show_profile: "show on my Unow profile"
+      show_profile: "show on my Canvas profile"
       share_this: "Share this Page:"
 
