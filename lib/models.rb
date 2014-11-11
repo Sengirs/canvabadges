@@ -26,7 +26,7 @@ class OrgStats
         res['badge_configs'] = BadgeConfig.all(:configured => true, :organization_id => org.id).count
         res['badge_placement_configs'] = BadgePlacementConfig.all(BadgePlacementConfig.badge_config.organization_id => org.id).count
         res['badges'] = BadgeConfig.all(:organization_id => org.id).map{|c| c.settings && c.settings['awarded_count'] }.compact.reduce(:+)
-#         res['badges'] = Badge.all(:state => 'awarded', Badge.badge_config.organization_id => org.id).count
+        res['last_badge_at'] = BadgeConfig.all(:organization_id => org.id).map{|c| c.settings && c.settings['last_badge_at'] }.compact.max
         res['domains'] = Domain.count
         res['organizations'] = Organization.count
       else
@@ -34,7 +34,7 @@ class OrgStats
         res['badge_configs'] = BadgeConfig.all(:configured => true).count
         res['badge_placement_configs'] = BadgePlacementConfig.count
         res['badges'] = BadgeConfig.all.map{|c| c.settings && c.settings['awarded_count'] }.compact.reduce(:+)
-#         res['badges'] = Badge.all(:state => 'awarded').count
+        res['last_badge_at'] = BadgeConfig.all.map{|c| c.settings && c.settings['last_badge_at'] }.compact.max
         res['domains'] = Domain.count
         res['organizations'] = Organization.count
       end
@@ -70,6 +70,14 @@ class Organization
     }
   end
 
+  def oss_config
+    ExternalConfig.all(:organization_id => self.id, :config_type => 'canvas_oss_oauth')[0]
+  end
+
+  def lti_configs
+    ExternalConfig.all(:organization_id => self.id, :config_type => 'lti')
+  end
+
   def default?
     settings['default'] == true
   end
@@ -80,6 +88,86 @@ class Organization
 
   def org_id
     "#{self.id}-#{self.settings['name'].downcase.gsub(/[^\w]+/, '-')[0, 30]}"
+  end
+
+  def self.default
+    Organization.all.detect{|o| o.default? }
+#     issuer = BadgeHelper.issuer
+#     issuer_host = issuer['url'].split(/\/\//)[-1]
+#     org = Organization.first(:host => issuer_host)
+  end
+
+  def editor_code
+    return self.settings['editor_code'] if self.settings && self.settings['editor_code']
+    raise "need id" unless self.id
+    self.settings ||= {}
+    self.settings['editor_code'] = self.id.to_s + "_" + Digest::MD5.hexdigest(Time.now.to_i.to_s + self.id.to_s + "editor" + rand(999).to_s)
+    self.save
+    self.settings['editor_code']
+  end
+
+  def user_code
+    return self.settings['user_code'] if self.settings && self.settings['user_code']
+    raise "need id" unless self.id
+    self.settings ||= {}
+    self.settings['user_code'] = self.id.to_s + "_" + Digest::MD5.hexdigest(Time.now.to_i.to_s + self.id.to_s + "editor" + rand(999).to_s)
+    self.save
+    self.settings['user_code']
+  end
+
+  def cleanup
+    id = self.id
+    self.destroy
+    ExternalConfig.all(:organization_id => id).destroy
+    BadgeConfig.all(:organization_id => id).destroy
+    BadgePlacementConfig.all(:organization_id => id).destroy
+  end
+
+  def self.process(config, params)
+    org = (config.organization_id && config.organization) || Organization.new
+    if config.organization_editor? || !org.id
+      org.settings ||= {}
+      org.settings['name'] = params['name'] if params['name']
+      org.settings['url'] = params['url'] if params['url']
+      org.settings['description'] = params['description'] if params['description']
+      org.settings['image'] = params['image'] if params['image']
+      org.settings['email'] = params['email'] if params['email']
+      org.settings['editor_config_ids'] ||= []
+      org.settings['editor_config_ids'] << config.id
+      org.settings['editor_config_ids'].uniq!
+      if !org.id
+        name = params['subdirectory'] || (org.settings['name'] || "organization").gsub(/[^\w]+/, '_')
+        name = "organization" if name.length < 2
+        numbered_name = name
+        host_pre = Organization.default.host
+        index = 0
+        found_org = Organization.first(:host => host_pre + "/_" + numbered_name)
+        while found_org
+          index += 1
+          numbered_name = name + index.to_s
+          found_org = Organization.first(:host => host_pre + "/_" + numbered_name)
+        end
+        org.host = host_pre + "/_" + numbered_name
+      end
+      org.save
+      org.editor_code
+      org.user_code
+      if params['oss']
+        oss_config = org.oss_config
+        oss_config ||= ExternalConfig.new(:organization_id => org.id, :config_type => 'canvas_oss_oauth')
+        oss_config.value = params['developer_key'] if params['developer_key']
+        oss_config.shared_secret = params['developer_secret'] if params['developer_secret']
+        oss_config.save
+      else
+        oss_config = org.oss_config
+        oss_config.destroy if oss_config
+      end
+
+      config.organization_id = org.id
+      config.save!
+    else
+      false
+    end
   end
 end
 
@@ -92,6 +180,56 @@ class ExternalConfig
   property :organization_id, Integer
   property :value, String
   property :shared_secret, String, :length => 256
+
+  def confirmation
+    hash = Digest::MD5.hexdigest(self.value + self.shared_secret)
+  end
+
+  def organization
+    org = self.organization_id && Organization.first(:id => self.organization_id)
+    org ||= Organization.default
+    org
+  end
+
+  def organization_editor?
+    org = self.organization_id && Organization.first(:id => self.organization_id)
+    if org && org.settings
+      (org.settings['editor_config_ids'] || []).include?(self.id)
+    else
+      false
+    end
+  end
+
+  def disconnect_from_organization
+    org = self.organization_id && Organization.first(:id => self.organization_id)
+    if org
+      org.settings['editor_config_ids'] ||= []
+      org.settings['editor_config_ids'] = org.settings['editor_config_ids'] - [self.id]
+      org.save
+    end
+    self.organization_id = nil
+    res = self.save
+    if ExternalConfig.all(:config_type => 'lti', :organization_id => org.id).count == 0 && BadgeConfig.all(:organization_id => org.id).count == 0
+      org.cleanup
+    end
+  end
+
+  def connect_to_organization(connect_code)
+    id, code = connect_code.split(/_/, 2)
+    org = Organization.first(:id => id)
+    if org && org.editor_code == connect_code
+      self.organization_id = org.id
+      self.save
+      org.settings['editor_config_ids'] ||= []
+      org.settings['editor_config_ids'] << self.id
+      org.save
+    elsif org && org.user_code == connect_code
+      self.organization_id = org.id
+      self.save
+    else
+      false
+    end
+  end
 
   def self.generate(name)
     conf = ExternalConfig.first_or_new(:config_type => 'lti', :app_name => name)
@@ -281,6 +419,8 @@ class BadgeConfig
   def update_counts
     self.settings ||= {}
     self.settings['awarded_count'] = Badge.all(:badge_config_id => self.id, :state => 'awarded').count
+    last_badge = Badge.all(:badge_config_id => self.id, :state => 'awarded', :order => [:issued.desc]).first
+    self.settings['last_badge_at'] = last_badge && last_badge.issued.iso8601
     self.save
   end
 
@@ -320,8 +460,9 @@ class BadgePlacementConfig
 
   def set_badge_config(badge_config)
     self.badge_config_id = badge_config.id
+    self.settings ||= {}
     badge_settings = badge_config.settings || {}
-    placement_settings = self.settings || {}
+    placement_settings = self.settings
     if badge_settings['min_percent'] != nil && placement_settings['min_percent'] == nil
       placement_settings['manual_approval'] = badge_settings['manual_approval']
       placement_settings['require_evidence'] = badge_settings['require_evidence']
@@ -428,6 +569,8 @@ class BadgePlacementConfig
   def update_counts
     self.settings ||= {}
     self.settings['awarded_count'] = Badge.all(:badge_placement_config_id => self.id, :state => 'awarded').count
+    last_badge = Badge.all(:badge_placement_config_id => self.id, :state => 'awarded', :order => [:issued.desc]).first
+    self.settings['last_badge_at'] = last_badge && last_badge.issued.iso8601
     self.save
     self.badge_config.update_counts
   end
@@ -562,10 +705,18 @@ class Badge
 
   def open_badge_json(host_with_port)
     image = self.badge_url
-    if image && image.match(/^data:/) && self.badge_config
+    if image && self.badge_config
       bc = self.badge_config
-      image = "/badges/from_badge/#{self.id}/#{self.nonce}/badge.png"
-      image = "#{BadgeHelper.protocol}://" + host_with_port + image
+      if image != bc.settings['badge_url']
+        # We must correct the image path before sending it to backpack
+        self.badge_url = bc.settings["badge_url"]
+        self.save
+        image = self.badge_url
+      end
+      if image.match(/^data:/)
+        image = "/badges/from_badge/#{self.id}/#{self.nonce}/badge.png"
+        image = "#{BadgeHelper.protocol}://" + host_with_port + image
+      end
     end
 
     {

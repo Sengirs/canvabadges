@@ -17,6 +17,7 @@ require './lib/auth.rb'
 require './lib/api.rb'
 require './lib/badge_configuration.rb'
 require './lib/views.rb'
+require './lib/token.rb'
 require './lib/utils.rb'
 require './lib/domain_fudger.rb'
 
@@ -25,7 +26,12 @@ class Canvabadges < Sinatra::Base
   register Sinatra::Api
   register Sinatra::BadgeConfiguration
   register Sinatra::Views
+<<<<<<< HEAD
 
+=======
+  register Sinatra::Token
+  
+>>>>>>> canvabadges/master
   use Rack::Iframe
   use DomainFudger
 
