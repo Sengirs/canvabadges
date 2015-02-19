@@ -89,7 +89,7 @@
 
       <form id="org_create_form" class="org_form form-horizontal" style="display: none;" rel="/token/organization?id=<%= @conf.id %>&confirmation=<%= @conf.confirmation %>">
         <h3>Organization Settings</h3>
-        <% org = @conf.organization %>
+        <% org = @conf.organization_id && @conf.organization %>
         <div class="control-group">
           <label class="control-label" for="org_name">Organization Name: </label>
           <div class="controls">
@@ -172,7 +172,7 @@
   <hr/>
 <p>
   NOTE: This is a site that I put together in my free time
-  to test out the idea badges inside of Canvas.
+  to test out the idea of badges inside of Canvas.
   If you copy the credentials above you're agreeing to
   use the site at your own risk. It most definitely will
   not work in any LMS other than Canvas.

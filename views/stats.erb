@@ -36,13 +36,16 @@
         <tr>
           <td>
             Organizations
-            <ul style="padding-top: 10px;">
-              <% Organization.all.each do |org| %>
-                <li>
+            <ul style="padding-top: 10px; list-style: none;">
+              <% orgs = Organization.all %>
+              <% orgs = orgs.select(&:approved?) unless params['all'] %>
+              <% orgs.each do |org| %>
+                <li style="margin: 5px;">
                   <a href="<%= org.settings['url'] %>">
                     <img src="<%= org.settings['image'] || "/organizations/default.png" %>" alt="" style="height: 40px; padding-right: 10px;"/>
                     <%= org.settings['name'] %></a> 
                   <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>">badge site</a>
+                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>/stats?this_org_only=1">stats</a>
                 </li>
               <% end %>
               <li style="margin-top: 15px; font-size: 12px; list-style: none;">

@@ -5,6 +5,11 @@ module Sinatra
     def self.registered(app)
       app.helpers Views::Helpers
       
+      app.before do
+        session[:locale] = params[:locale] if params[:locale]
+        I18n.locale = session[:locale] || 'en'
+      end
+
       app.get "/" do
         @full_footer = true
         org_check
@@ -197,12 +202,12 @@ module Sinatra
           if @student
             erb :_badge_status, :layout => false
           else
-            return "<h3>You are not a student in this course, so you can't earn this badge</h3>"
+            return "<h3>#{I18n.t("errors.not_a_student")}</h3>"
           end
         elsif @badge_placement_config && @badge_placement_config.award_only?
           return ""
         else
-          return "<h3>Error retrieving badge status</h3>"
+          return "<h3>#{I18n.t("errors.badge_config")}</h3>"
         end
       end
     end
@@ -212,7 +217,7 @@ module Sinatra
       def org_check
         @org = Organization.first(:host => request.env['badges.original_domain'], :order => :id)
         @org ||= Organization.first(:old_host => request.env['badges.original_domain'], :order => :id)
-        halt 404, error("Domain not properly configured. No Organization record matching the host #{request.env['badges.domain']}") unless @org
+        halt 404, error(I18n.t("errors.organization_not_found", :domain => request.env['badges.domain'])) unless @org
         CanvasAPI.set_org(@org)
       end
       
