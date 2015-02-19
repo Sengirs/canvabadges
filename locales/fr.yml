@@ -54,11 +54,13 @@ fr:
       credits: credits
       master_this: "Maîtrisez la compétence  %{name}"
       mastered: mastered
+      not_earned_yet: "Vous n'avez pas encore obtenu ce badge."
       not_mastered: not mastered
       final_score: "Score final d'au moins %{min_percent}% (actuellement %{computed_final_score}%)"
       result: "Pour obtenir ce badge, vous avez besoin de %{min_percent}%, mais vous n'avez pour l'instant que %{computed_final_score }% dans ce cours."
       see_all_badges: "Voir tous mes badges"
     evidence_url:
+      achieve_this: "Pour obtenir ce badge, vous devez satisfaires les pré-requis suivants :"
       label: "URL de preuve"
       url_required: "URL prouvant que vous méritez bien d'obtenir le badge (obligatoire)"
       url_optional: "URL prouvant que vous avez réalisé l'activité demandée (optionnel)"
@@ -83,6 +85,7 @@ fr:
       badge_list_desc: "Insérez un lien vers un index des badges du cours."
       create_new_badge: "Créer un nouveau badge"
       add_badge: "Ajouter un badge"
+      learn_more: "en savoir plus"
     badge_completion:
       evidence: "Preuve de validation"
       evidence_link: "Lien de confirmation par le participant et l'enseignant"
@@ -149,6 +152,7 @@ fr:
       badge_site: "badge site"
       contact_us: "Contact us"
       contact_us_text: "to add your own badging site"
+      stats: "stats"
     user_badges:
       your_badges_at: Vos badges sur
       badges_for: Les badges pour

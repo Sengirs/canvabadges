@@ -1,9 +1,9 @@
 <h2><img src="<%= @org.settings['image'] || "/organizations/default.png" %>" alt=""/><%= I18n.t('views.badge_chooser.select_embed')%></h2>
-<p style="margin-top: -35px; padding-left: 95px;"><%= I18n.t('views.badge_chooser.select_new')%></p>
+<p style="margin-top: -35px; padding-left: 95px;"><%= I18n.t('views.badge_chooser.select_new')%> (<a href="https://www.youtube.com/watch?v=I9ZJdh6_jLE#t=96" target="_blank"><%= I18n.t('views.badge_chooser.learn_more') %></a>)</p>
 
 <div class="row">
 	<div class="span10 offset1" style="padding-top: 15px;">
-	  <% @badge_configs.each do |bc| %>
+	  <% @badge_configs.compact.each do |bc| %>
 	    <div class="badge_config select_badge_config" data-id="<%= bc.reuse_code %>" style="cursor: pointer;">
 	      <% settings = bc.settings || {} %>
 	      <a href="#"><img src='<%= settings['badge_url'] %>' style='float: left; margin-right: 10px;' class='thumbnail'/></a>
@@ -11,13 +11,13 @@
 	        <a href="#" class='name'><%= settings['badge_name'] || I18n.t('views.badge_chooser.unnamed_badge') %></a>
 	      </h2>
 	      <p class='desc'><%= settings['badge_description'] %></p>
-	
+
 	      <% if settings['hours'] %>
 	        <p><%= I18n.t('views.badge_chooser.appr_hours')%><%= settings['hours'] %></p>
 	      <% end %>
 	      <div style='clear: left;'></div>
 	    </div>
-	  <% end %>  
+	  <% end %>
 	  <% code = Digest::MD5.hexdigest(Time.now.to_i.to_s + rand.to_s) %>
 	  <div class="badge_config select_badge_config" data-proposed_id="list" style="cursor: pointer;">
 	    <img src='https://cdn3.iconfinder.com/data/icons/other-icons/48/list-128.png' style='float: left; margin-right: 10px; height: 50px; width: 50px; padding: 5px 24px' class='thumbnail'/>
