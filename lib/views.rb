@@ -7,7 +7,7 @@ module Sinatra
 
       app.before do
         session[:locale] = params[:locale] if params[:locale]
-        I18n.locale = session[:locale]
+        I18n.locale = session[:locale] || 'en'
       end
 
       app.get "/" do
@@ -256,6 +256,9 @@ module Sinatra
         redirect to("#{protocol}://#{host}/login/oauth2/auth?client_id=#{oauth_config.value}&response_type=code&redirect_uri=#{CGI.escape(return_url)}")
       end
 
+      def h(text)
+        Rack::Utils.escape_html(text)
+      end
     end
   end
 

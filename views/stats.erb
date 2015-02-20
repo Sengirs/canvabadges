@@ -18,6 +18,16 @@
         <td><%= I18n.t('views.stats.badge_awarded')%> <a class="sub" href="<%= request.env['badges.path_prefix'] %>/badges/public/awarded<%= "?this_org_only=1" if @stats_org %>"><%= I18n.t('views.stats.see_learner_badges')%></a></td>
         <td><%= comma @stats['badges'] %></td>
       </tr>
+      <tr>
+        <td>Last Badge Awarded</td>
+        <td>
+          <% if @stats['last_badge_at'] %>
+            <%= Time.parse(@stats['last_badge_at']).strftime("%d %b, %Y") %>
+          <% else %>
+            Unknown <!-- TODO: change this to "Never" after a while, say mid-2015... -->
+          <% end %>
+        </td>
+      </tr>
       <% unless @stats_org %>
         <tr>
           <td><%= I18n.t('views.stats.canvas_domains')%></td>
@@ -26,20 +36,23 @@
         <tr>
           <td>
             <%= I18n.t('views.stats.organizations')%>
-            <ul style="padding-top: 10px;">
-              <% Organization.all.each do |org| %>
-                <li>
+            <ul style="padding-top: 10px; list-style: none;">
+              <% orgs = Organization.all %>
+              <% orgs = orgs.select(&:approved?) unless params['all'] %>
+              <% orgs.each do |org| %>
+                <li style="margin: 5px;">
                   <a href="<%= org.settings['url'] %>">
                     <img src="<%= org.settings['image'] || "/organizations/default.png" %>" alt="" style="height: 40px; padding-right: 10px;"/>
-                    <%= org.settings['name'] %></a> 
+                    <%= org.settings['name'] %></a>
                   <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>"><%= I18n.t('views.stats.badge_site')%></a>
+                  <a class="sub" href="<%= BadgeHelper.protocol %>://<%= org.host %>/stats?this_org_only=1"><%= I18n.t('views.stats.stats') %></a>
                 </li>
               <% end %>
               <li style="margin-top: 15px; font-size: 12px; list-style: none;">
                 <a href="<%= BadgeHelper.issuer['owner_url'] %>"><%= I18n.t('views.stats.contact_us')%></a> <%= I18n.t('views.stats.contact_us_text')%>
               </li>
             </ul>
-            
+
           </td>
           <td><%= @stats['organizations'] %></td>
         </tr>
