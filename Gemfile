@@ -24,4 +24,9 @@ group :development do
     gem 'rack-test'
     gem 'selenium-webdriver'
     gem 'capybara'
+    gem 'capistrano', '3.4.0', require: false
+    gem 'capistrano-rvm', require: false
+    gem 'capistrano-cookbook', require: false
+    gem 'capistrano-bundler', '~> 1.1.2', require: false
+    gem 'capistrano-passenger'    
 end

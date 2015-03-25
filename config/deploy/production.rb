@@ -6,7 +6,7 @@
 # server 'example.com', user: 'deploy', roles: %w{app db web}, my_property: :my_value
 # server 'example.com', user: 'deploy', roles: %w{app web}, other_property: :other_value
 # server 'db.example.com', user: 'deploy', roles: %w{db}
-
+server '46.105.116.33', user: 'deploy', roles: %w{app db web}
 
 
 # role-based syntax
@@ -30,8 +30,8 @@
 # For available Capistrano configuration variables see the documentation page.
 # http://capistranorb.com/documentation/getting-started/configuration/
 # Feel free to add new variables to customise your setup.
-
-
+set :application, 'badges-production'
+set :deploy_to, "/home/nginx-apps/#{fetch(:application)}"
 
 # Custom SSH Options
 # ==================
@@ -46,6 +46,11 @@
 #    forward_agent: false,
 #    auth_methods: %w(password)
 #  }
+set :ssh_options, {
+  keys: %w(/home/regmillet/.ssh/unow_rsa), 
+  forward_agent: false,
+  auth_methods: %w(publickey password)
+}
 #
 # The server-based syntax can be used to override options:
 # ------------------------------------
