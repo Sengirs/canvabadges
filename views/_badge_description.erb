@@ -23,7 +23,7 @@
 <% end %>
 
 <% if settings['badge_requirements'] && settings['badge_requirements'] != '' %>
-  <h3><%= I18n.t("partials.badge_description.titles.requirements") %></h3>
+  <h3 style="margin-top: 25px;"><%= I18n.t("partials.badge_description.titles.requirements") %></h3>
   <p class='desc'>
     <%= settings['badge_requirements'] %>
   </p>
@@ -33,8 +33,10 @@
 <% end %>
 <% org = @badge_config.organization %>
 <% settings = (org && org.settings) || BadgeHelper.issuer %>
+<!--
 <p class="verification">
   <img src='<%= settings['image'] %>'/>
+
   <% if @current_badge && @current_badge.awarded? %>
     <%= I18n.t("partials.badge_description.issued_by.was") %>
   <% else %>
@@ -44,7 +46,7 @@
 
   <%= I18n.t("partials.badge_description.hosted") %> <%= (org && org.host) || request.host %>.
   <span style="clear: left;"></span>
-</p>
+</p>-->
 
 <% if @stats %>
   <script type="text/javascript" src="https://www.google.com/jsapi"></script>
