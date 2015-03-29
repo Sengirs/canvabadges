@@ -40,7 +40,10 @@
     <br/>
     <a class='btn btn-primary btn-large' href='<%= request.env['badges.path_prefix'] %>/badges/all/<%= @domain_id %>/<%= @user_id %>'><%= I18n.t("partials.badge_status.all_badges") %>
     </a>
-    &nbsp;<a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='<%= I18n.t("partials.badge_status.backpack_alt") %>'/></a>
+    &nbsp;
+    <% if @badge.can_be_exported? %>
+      <a class='btn' style='background: #4a4842;' id='redeem' href='#' rel='<%= url %>'><span class='icon-plus icon-white'></span><img src='/mozilla-backpack.png' alt='<%= I18n.t("partials.badge_status.backpack_alt") %>'/></a>
+    <% end %>
     <span style="vertical-align: bottom; color: #888;">
       <%= I18n.t("partials.badge_status.earned_for", :email => @badge.email) %>
     </span>

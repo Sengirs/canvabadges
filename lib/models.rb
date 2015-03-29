@@ -74,6 +74,10 @@ class Organization
     self.settings && self.settings['approved']
   end
 
+  def allow_export?
+    self.settings && self.settings['allow_export']
+  end
+
   def oss_config
     ExternalConfig.all(:organization_id => self.id, :config_type => 'canvas_oss_oauth')[0]
   end
@@ -782,6 +786,10 @@ class Badge
 
   def pending?
     self.state == 'pending'
+  end
+
+  def can_be_exported?
+    self.badge_config && self.badge_config.organization && self.badge_config.organization.allow_export?
   end
 
   def revoke
