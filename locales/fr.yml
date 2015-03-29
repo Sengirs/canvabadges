@@ -9,12 +9,12 @@ fr:
     badge_name: "Badge sans nom"
   partials:
     badge_description:
-      badge_awarded: ", et il a été decerné à %{awarded_at}"
+      badge_awarded: ", et il a été décerné à %{awarded_at}"
       completed_requirements: "Ce participant a complété les pré-requis pour obtenir ce badge."
       hosted: "Hébergement sur"
       issued_by:
-        is: "Ce badge est decerné par"
-        was: "Ce badge a été decerné par"
+        is: "Ce badge est décerné par"
+        was: "Ce badge a été décerné par"
       titles:
         requirements: "Pré-requis de validation :"
         completion_hours: "Durée approximative de réalisation : %{hours}"
@@ -31,7 +31,7 @@ fr:
       backpack_alt: "Ajouter ce badge à mon Backpack Mozilla"
       completed: "validé les modules requis."
       current_score: "%{current_score}% dans ce cours actuellement "
-      earned_for: "decerné pour l'adresse e-mail : %{email}"
+      earned_for: "décerné pour l'adresse e-mail : %{email}"
       earned_somewhere_else: "Vous avez déjà obtenu ce badge à un autre endroit du cours."
       needed_credits: "%{credits} points, ce que vous avez obtenu. "
       needed_requirements: "valider les modules requis et maîtriser les compétences demandées. "
@@ -40,7 +40,7 @@ fr:
       show_badge: "Afficher ce badge sur ma page de profil"
       titles:
         almost_earned: "Vous avez presque obtenu ce badge !"
-        earned: "Ce badge vous a été decerné !"
+        earned: "Ce badge vous a été décerné !"
         not_earned:
       you_have: "Vous avez "
       you_needed: "Afin d'obtenir ce badge, vous deviez "
@@ -125,7 +125,7 @@ fr:
     public_badge_configs:
       unnamed_badge: "Badge sans nom"
     public_badges:
-      recent_awarded_badges: "Badges publics récemment decernés"
+      recent_awarded_badges: "Badges publics récemment décernés"
       nothing_to_show: Nothing to Show
       appr_hours: "Durée d'implication estimée :"
       issued: "Descerné"
@@ -155,9 +155,9 @@ fr:
       stats: "stats"
     user_badges:
       your_badges_at: Vos badges sur
-      badges_for: Les badges pour
+      badges_for: Tableau de chasse de
       user: Utilisateur
-      at: à
+      at: sur
       no_data: Aucune donnée disponible
       no_badges: Aucun badge gagné ou partagé
       show_profile: "Voir sur mon profil"
