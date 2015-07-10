@@ -4,26 +4,26 @@ module Sinatra
   module BadgeConfiguration
     def self.registered(app)
       app.helpers BadgeConfiguration::Helpers
-      
+
       # Link selection page for picking from existing badges or making a new one
       app.get "/badges/pick" do
         org_check
         load_user_config
         halt 404, error("No user information found") unless @user_config
         @badge_configs = BadgeConfigOwner.all(:user_config_id => @user_config.id, :order => :id.desc).map(&:badge_config).uniq
-        erb :badge_chooser        
+        erb :badge_chooser
       end
-      
+
       # configure badge settings.
       app.post "/badges/settings/:badge_placement_config_id" do
         org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
-        
+
         @badge_config = @badge_placement_config.badge_config
         raise "bad!" unless @badge_config
         placement_settings = @badge_placement_config.settings || {}
         badge_settings = @badge_config.settings || {}
-        
+
         badge_settings['badge_url'] = params['badge_url']
         badge_settings['badge_url'] = "/badges/default.png" if !badge_settings['badge_url'] || badge_settings['badge_url'].empty?
         badge_settings['badge_name'] = params['badge_name'] || "Badge"
@@ -59,12 +59,12 @@ module Sinatra
               outcomes << [id, CGI.unescape(v), credits]
             end
           end
-          
+
         end
         placement_settings['modules'] = modules.length > 0 ? modules : nil
         placement_settings['outcomes'] = outcomes.length > 0 ? outcomes : nil
         placement_settings['total_credits'] = total_credits
-        
+
         @badge_placement_config.settings = placement_settings
         @badge_placement_config.updated_at = DateTime.now
         @badge_placement_config.check_for_public_state
@@ -80,7 +80,7 @@ module Sinatra
         @badge_config.save
         redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@badge_placement_config_id}/#{@user_id}")
       end
-      
+
       # set a badge to public or private
       app.post "/badges/:badge_id" do
         org_check
@@ -100,7 +100,7 @@ module Sinatra
           halt 400, {:error => "user mismatch"}.to_json
         end
       end
-      
+
       app.post "/badges/disable/:badge_placement_config_id" do
         org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
@@ -110,27 +110,27 @@ module Sinatra
         @badge_placement_config.save
         {:disabled => true}.to_json
       end
-      
+
       # manually award a user with the course's badge
       app.post "/badges/award/:badge_placement_config_id/:user_id" do
         org_check
         load_badge_config(params['badge_placement_config_id'], 'edit')
         @badge_config = @badge_placement_config.badge_config
-  
+
         settings = (@badge_placement_config && @badge_placement_config.merged_settings) || {}
         if @badge_config && @badge_config.configured? && (@badge_placement_config.configured? || @badge_placement_config.award_only?)
           json = api_call("/api/v1/courses/#{@course_id}/users?enrollment_type=student&per_page=50&include[]=email&user_id=#{params['user_id']}", @user_config)
           student = json.detect{|e| e['id'] == params['user_id'].to_i }
           if student
             uc = UserConfig.first(:user_id => params['user_id'], :domain_id => @badge_placement_config.domain_id)
-            email = student['email'] 
+            email = student['email']
             email ||= student['login_id'] if student['login_id'] && student['login_id'].match(/@/)
             email ||= uc && uc.email
             if !email
               return error("That user doesn't have an email in Canvas, and so can't be awarded badges. Please notify the student that they need to set up an email address and then try again.")
             end
             badge = Badge.manually_award(params, @badge_placement_config, student['name'], email)
-            
+
             redirect to("#{request.env['badges.path_prefix']}/badges/check/#{@badge_placement_config_id}/#{@user_id}")
           else
             return error("That user is not a student in this course")
@@ -139,16 +139,16 @@ module Sinatra
           return error("This badge has not been configured yet")
         end
       end
-      
+
     end
-  
+
     module Helpers
       def load_user_config
         domain_id = @badge_placement_config && @badge_placement_config.domain_id
         domain_id ||= session['domain_id']
         @user_config = UserConfig.first(:domain_id => domain_id, :user_id => session['user_id']) if domain_id
       end
-      
+
       def permission_check(course_id, permission)
         if permission
           if !session['user_id']
@@ -160,7 +160,7 @@ module Sinatra
           end
         end
       end
-      
+
       def load_badge_config(badge_placement_config_id, permission=nil)
         @badge_placement_config = BadgePlacementConfig.first(:id => badge_placement_config_id)
         domain_id = @badge_placement_config && @badge_placement_config.domain_id
@@ -183,6 +183,6 @@ module Sinatra
       end
     end
   end
-  
+
   register BadgeConfiguration
 end
