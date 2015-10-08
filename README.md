@@ -109,7 +109,7 @@ the redirect URI enter `https://<canvabadges>/oauth_success`. Then in
 Canvabadges run the following code:
 
 ```ruby
-ec = ExternalConfig.new(:config_type => 'canvas_oss_oauth', :organization_id => org.id)
+ec = ExternalConfig.new(:config_type => 'canvas_oss_oauth', :organization_id => org.id, :domain => "your.canvaslms-domain.com")
 ec.app_name = "Name for Canvas Instance"
 ec.value = "<developer key id>"
 ec.shared_secret = "<developer key secret>"
