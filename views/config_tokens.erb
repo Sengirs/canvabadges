@@ -15,12 +15,12 @@
       </dd>
       <% end %>
     </dl>
-    
+
     <h3>Setup Instructions</h3>
     <ol id="instructions">
       <li>
-        <a href="<%= BadgeHelper.protocol %>://<%= @conf.organization.host %>/canvabadges.xml">Copy this XML link</a>
-        and pick "By URL" as 
+        <a href="/canvabadges.xml">Copy this XML link</a>
+        and pick "By URL" as
         the configuration type to add as a new external tool in Canvas (use the key
         and secret above for configuration)
       </li>
@@ -39,13 +39,13 @@
       </li>
       <li>
         <em>NOTE FOR OPEN SOURCE USERS:</em> If you are running your own instance of
-        Canvas (i.e. not Canvas Cloud hosted by Instructure) then there will possibly be 
-        a few more steps involved before your configuration will work correctly. 
+        Canvas (i.e. not Canvas Cloud hosted by Instructure) then there will possibly be
+        a few more steps involved before your configuration will work correctly.
         <a href="https://github.com/whitmer/canvabadges#advanced-settings">Check out these
         instructions for more details</a>.
       </li>
     </ol>
-    
+
     <% if BadgeHelper.issuer['allow_subdirectories'] %>
       <h3>Advanced Settings</h3>
       <% if @conf.organization_id %>
@@ -64,15 +64,15 @@
           <% end %>
         </p>
         <% if @conf.organization_editor? %>
-          <a href="#" class="org_action" id="org_create">Edit Settings</a> | 
+          <a href="#" class="org_action" id="org_create">Edit Settings</a> |
         <% end %>
         <a href="#" class="org_action" id="org_disconnect">Disconnect from <%= @conf.organization.settings['name'] %></a>
       <% else %>
         <p>If you are using Canvabadges as an individual instructor then you shouldn't mess with these
-        settings or you'll break stuff. If you're looking to create a sub-branded experience within your 
+        settings or you'll break stuff. If you're looking to create a sub-branded experience within your
         organization then this is where you should be looking :-).</p>
         <p>
-          <a href="#" class="org_action" id="org_connect">Connect to an Organization</a> | 
+          <a href="#" class="org_action" id="org_connect">Connect to an Organization</a> |
           <a href="#" class="org_action" id="org_create">Create an Organization</a>
         </p>
       <% end %>
@@ -80,7 +80,7 @@
         <h3>Confirm Disconnect</h3>
         <button type="submit" class="btn btn-primary">Yes, Disconnect from Organization</button>
       </form>
-    
+
       <form id="org_connect_form" class="org_form form-inline" style="display: none;" rel="/token/connect?id=<%= @conf.id %>&confirmation=<%= @conf.confirmation %>">
         <h3>Connect to an Organization</h3>
         <input type="text" name="code" placeholder="connection code" class="input-small span3">
@@ -138,10 +138,10 @@
             <label class="control-label" for="org_name"></label>
             <div class="controls">
               Open source installs need to provide a developer key so Canvabadges can speak to
-              their Canvas instance API. To generate a developer key go to 
+              their Canvas instance API. To generate a developer key go to
               <code>https://yourcanvas/developer_keys</code> and create one. Use
               <code><%= BadgeHelper.issuer['url'] %>/logo.png</code> as the developer key
-              image, and set the Redirect URI to 
+              image, and set the Redirect URI to
               <code><%= BadgeHelper.issuer['url'] %>/oauth_success</code>. Then enter the
               two values generated for the developer key below.
             </div>
