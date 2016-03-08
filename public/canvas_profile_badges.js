@@ -24,6 +24,9 @@ $(function() {
     console.log("CANVABADGES: Couldn't find a valid protocol and host. Canvabadges will not appear on profile pages until this is fixed.");
   }
   var match = location.href.match(/\/(users|about)\/(\d+)$/);
+  if(location.pathname === "/profile"){
+    match = ["/profile", "profile", ENV["current_user_id"]];
+  }
   if(match && protocol_and_host) {
     console.log("CANVABADGES: This page shows badges! Loading...");
     var user_id = match[2];
