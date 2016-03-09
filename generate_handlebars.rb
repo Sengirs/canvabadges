@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 puts `handlebars ./handlebars/ -f ./handlebars/bin/templates.js -k ./public/common.js`
 template = File.read('./handlebars/bin/templates.js')
 str = "// Handlebars templates"

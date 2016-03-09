@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'sinatra/base'
 require 'i18n'
 require 'i18n/backend/fallbacks'
@@ -36,13 +37,15 @@ class Canvabadges < Sinatra::Base
   # enable sessions so we can remember the launch info between http requests, as
   # the user takes the assessment
   enable :sessions
-  enable :logging, :dump_errors, :raise_errors, :show_exceptions
+  enable :logging, :dump_errors, :raise_errors
+
   FileUtils.mkdir_p 'log' unless File.exists?('log')
   log = File.new("log/sinatra.log", "a")
   $stderr.reopen(log)
 
   if ENV["RACK_ENV"] == 'production'
     config = YAML.load( File.open(Dir.pwd + "/configuration.yml") )
+    disable :show_exceptions
     config.each do |key, value|
       ENV[key] = value
     end
