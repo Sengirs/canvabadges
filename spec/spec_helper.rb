@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 RACK_ENV='test'
 ENV['RACK_ENV']='test'
 require 'rspec'
