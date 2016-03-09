@@ -7,7 +7,8 @@
 # server 'example.com', user: 'deploy', roles: %w{app web}, other_property: :other_value
 # server 'db.example.com', user: 'deploy', roles: %w{db}
 #server '46.105.116.33', user: 'deploy', roles: %w{app db web}
-server '5.135.140.62', user: 'deploy', roles: %w{app db web}, port: 33565
+server '176.31.226.26', user: 'yannick_petit', roles: %w{app db web}, port: 33565
+#server '5.135.140.62', user: 'deploy', roles: %w{app db web}, port: 33565
 #server "5.39.74.49", user: "deploy", roles: %w{web app db}, port: 33565
 
 # role-based syntax
@@ -47,11 +48,11 @@ set :deploy_to, "/home/nginx-apps/#{fetch(:application)}"
 #    forward_agent: false,
 #    auth_methods: %w(password)
 #  }
-set :ssh_options, {
-  keys: %w(/home/regmillet/.ssh/github),
-  forward_agent: true,
-  auth_methods: %w(publickey)
-}
+#set :ssh_options, {
+  #keys: %w(/home/regmillet/.ssh/github),
+#  forward_agent: true,
+#  auth_methods: %w(publickey)
+#}
 #
 # The server-based syntax can be used to override options:
 # ------------------------------------
