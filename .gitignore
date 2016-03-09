@@ -2,3 +2,4 @@
 .bundle
 configuration.yml
 .DS_STORE
+public/badges
