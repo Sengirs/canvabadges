@@ -3,7 +3,7 @@
 
 <% if @badge && @badge.evidence_url %>
   <h2><%= I18n.t('views.badge_completion.evidence')%></h2>
-  <% if @badge_placement_config.settings['manual_approval'] %>
+  <% if @badge_placement_config && @badge_placement_config.settings['manual_approval'] %>
     <a href="<%= @badge.evidence_url %>" target="_blank"><%= I18n.t('views.badge_completion.evidence_link')%></a>.
   <% else %>
     <a href="<%= @badge.evidence_url %>" target="_blank"><%= I18n.t('views.badge_completion.evidence_link_learner')%></a> <%= I18n.t('badge_completion.evidence_link_learner_hint')%>.
