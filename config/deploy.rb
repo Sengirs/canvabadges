@@ -1,9 +1,9 @@
 # config valid only for current version of Capistrano
 lock '3.4.0'
 
-set :repo_url, 'git@github.com:Unow/canvabadges.git'
+set :repo_url, 'git@bitbucket.org:regis_ct2c/canvabadges.git'
 set :rvm_type, :system
-set :rvm_ruby_version, '2.1.5'
+#set :rvm_ruby_version, '2.1.5'
 
 # Default branch is :master
 ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp

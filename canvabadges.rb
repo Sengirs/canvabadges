@@ -1,4 +1,6 @@
 # -*- encoding : utf-8 -*-
+gem 'json', '=1.8.6'
+
 require 'sinatra/base'
 require 'i18n'
 require 'i18n/backend/fallbacks'

@@ -7,7 +7,7 @@
 # server 'example.com', user: 'deploy', roles: %w{app web}, other_property: :other_value
 # server 'db.example.com', user: 'deploy', roles: %w{db}
 #server '46.105.116.33', user: 'deploy', roles: %w{app db web}
-server '176.31.226.26', user: 'yannick_petit', roles: %w{app db web}, port: 33565
+server '87.98.170.94', user: 'canvas', roles: %w{app db web}
 #server '5.135.140.62', user: 'deploy', roles: %w{app db web}, port: 33565
 #server "5.39.74.49", user: "deploy", roles: %w{web app db}, port: 33565
 
@@ -32,8 +32,8 @@ server '176.31.226.26', user: 'yannick_petit', roles: %w{app db web}, port: 3356
 # For available Capistrano configuration variables see the documentation page.
 # http://capistranorb.com/documentation/getting-started/configuration/
 # Feel free to add new variables to customise your setup.
-set :application, 'badges-production'
-set :deploy_to, "/home/nginx-apps/#{fetch(:application)}"
+set :application, 'badges'
+set :deploy_to, "/opt/apps/#{fetch(:application)}"
 
 # Custom SSH Options
 # ==================

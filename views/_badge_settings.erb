@@ -8,6 +8,8 @@
 <% end %>
   <form class='well form-horizontal' id="badge_settings" style="margin-top: 15px;" method="post" action="<%= request.env['badges.path_prefix'] %>/badges/settings/<%= @badge_placement_config_id %>">
     <h2>Badge Settings</h2>
+    <p><%= Badge.all(badge_placement_config_id: @badge_placement_config_id, state: "awarded").count %> awarded badges</p>
+    <br />
     <img src="<%= settings['badge_url'] || '/badges/default.png' %>" style='float: left; margin-right: 10px; width: 90px; height: 90px;' class='thumbnail'/>
     <fieldset>
       <div class="control-group">
@@ -51,7 +53,7 @@
           <br/>
           Set this value to reuse an existing badge. Clear to unlink from an existing badge. Remember: linking and unlinking will cause problems if any users have already exported badges.
           <% if @badge_config %>
-            To use this badge's settings for a different course, the code is <%= @badge_config.reference_code %>. 
+            To use this badge's settings for a different course, the code is <%= @badge_config.reference_code %>.
           <% end %>
         </div>
       </div>
@@ -125,11 +127,11 @@
         <% settings = (org && org.settings) || BadgeHelper.issuer %>
         <p class="verification">
           <img src='<%= settings['image'] %>'/>
-          Ce badge a été émis par 
+          Ce badge a été émis par
           <a href="<%= settings['url'] %>">
           <%= settings['name'] %></a>.
 <% if false %>
-          Il est hébergé par le site 
+          Il est hébergé par le site
           <%= (org && org.host) || request.host %>.
 <% end %>
           If this association
@@ -149,8 +151,8 @@
           </div>
           <% if @badge_placement_config.badge_config.public %>
             <% bc = @badge_placement_config.badge_config %>
-            <% badge_url = "#{BadgeHelper.protocol}://" + bc.organization.host + 
-                           "/badges/criteria/#{bc.id}/#{bc.nonce}" 
+            <% badge_url = "#{BadgeHelper.protocol}://" + bc.organization.host +
+                           "/badges/criteria/#{bc.id}/#{bc.nonce}"
             %>
             <div>
               <a href="<%= badge_url %>" target="_blank">public link to badge details page</a>
@@ -163,4 +165,4 @@
         <button type="button" class='btn' id="disable_badge" rel="/badges/disable/<%= @badge_placement_config.id %>">Disable This Badge Location</button>
       </div>
     </fieldset>
-  </form> 
+  </form>
